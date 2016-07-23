@@ -1,0 +1,3984 @@
+@cT datastream 1
+$syntaxlevel 2
+@1pl4006*	Graphs and Tracks
+*	Part I -- From Graphs to Motion
+*	version 2.1
+*	July 19, 2000
+*
+*	David Trowbridge
+*	7810 NE 183rd St.
+*	Kenmore, WA 98052-2718
+*	(425) 485-8694
+*
+***************************************************
+*	@0a9 copyright 1988, 1989, 1994, 2000
+***************************************************
+*	To prepare IBM version from Macintosh source:
+*	Search for $$ IBM.  Uncomment relevant IBM-specific code
+*	and comment out code identified by $$ MAC
+*
+***************************************************
+*	Version 2.1
+***************************************************
+* 07/19/00 In unit RestoreIcons, font name must be in UPPERCASE for Windows cT 3.0
+* 07/17/00 Introduced Windows workaround by Bruce Sherwood to call RestoreIcons ONLY once, 
+* 07/17/00 immediately before do InitScreen; removed call in RestoreIcons to "zsans + 10"
+* 07/17/00 Recreated Mac icon files by first using cT 3.0 to open and save .fdb files on Mac; 
+* 07/17/00 then running IconMaker2  (6/23/94) and saving out Mac files
+* 07/14/00 Removed Microsoft affiliation on title page and credits page; changed version number to 2.1
+* 07/14/00 Added floating point variables newtime and waittime to Plot unit and added loop on zclock to limit animation speed
+* 07/01/00 Recompiled icon.t for use in converting GT font files (conversion fpc-->fdb doesn't work)
+* 01/07/00 In DrawTrck, no longer depend on y-displacement from icons file (doesn't work in cT Windows version)
+* 01/07/00 Changed icons file to GT12.FPC and changed reference in icons command to "GT12.FPC"
+* 01/07/00 Began work on Windows version
+***************************************************
+*	Version 2.0
+***************************************************
+* 05/07/94 Completed version 2.0 for publication by PAS
+* 03/19/94 set WdTrck := 1 in InitScreen $$ to insure bounds command doesn't bomb in unit TrckPort
+* 03/06/94 changed values in SetTimeIncrement to run slower on 486/33
+* 03/06/94 removed units SetMinScreen, DefaultScreen, ScreenMenus
+* 10/31/93 added counter and outloop on mouse click in DropBall.
+* 10/31/93 changed style of text in write statements to Full Justified so they will wrap.
+* 10/31/93 removed $pcoldcolor, $oldcolor, $nostylemark and $writewrap
+* 10/31/93 changed write to text commands in InclineErrorMessage for correct wordwrap
+* 09/07/93 in xtGPsetup, added function abs() in bounds command to work around bug in PC ct.exe
+* 09/07/93 inserted color zdefaultf and mode write commands in xt, vt, atGraph to preserve desired color
+* 08/28/93 added routine, SetTimeIncrement to set DT and DT2 appropriate to machine speed
+* 08/28/93 removed CurrStored := 0 in InitProgram so Custom examples are included
+* 08/28/93 added a call to InitScreen in IEU so that RestoreIcons gets called
+* 08/05/93 recompiled using cT, v. 2.0
+* 08/05/93 commented out logging facility at $$ LOG $$
+***************************************************
+* 10/25/89 turned on logging facility for use on IBM PC/AT's with Physics 210/407
+*	by un-commenting at $$ LOG $$
+***************************************************
+*	version 1.1
+******************************************************
+* 08/29/89 removed condition StuGraphVisible from UpdateErrorDisplay
+* 08/29/89 call to InitProgram moved from Setup to TitlePage
+* 08/29/89 adjusted Fonty for VGA in InitScreen
+* 08/28/89 changed cursor icon to zk(A) in RestoreIcons (curved pointer)
+* 08/21/89 added inhibit/allow update to units xtGraph, vtGraph, atGraph
+* 08/21/89 adjusted lower margin in ClearLastError to clear hilighting in VGA
+* 08/21/89 added global flag OnTitlePage to determine when to display Screen Menus
+* 08/21/89 added call to FindErrors in unit Plot, setting of CorrectGraphVisible in Plot
+* 08/21/89 removed StuGraphVisible := TRUE from PrepareExample
+* 08/20/89 moved call to ScreenMenus from ScreenTypeMenus to InitScreen
+* 08/20/89 wrote DefaultScreen to set screen to MacSE or EGA in ieu
+* 08/20/89 changed lower margin of clearing in LabelPosts so that IPmark is not cleared on Mac II
+* 08/18/89 minor changes to vtGraph, vtGPsetup and InitScreen for EGA
+* 08/18/89 adjusted HtScale, HtButton and HtTrck in InitScreen for EGA
+* 08/18/89 adjusted gorigin in IVelPort and IPosPort (to accomodate EGA)
+* 08/18/89 changed in InitScreen post label and ramp label vertical positioning for MacSE
+* 08/18/89 extended downward erase region in LabelPosts
+* 08/18/89 created a new icon file, gt09 for EGA, changed RestoreIcons accordingly
+* 08/18/89 inserted blank tag -font- command in SetYnewline
+* 08/18/89 changed order of testing in GiveHint, added TWObutton condition to feedback
+* 08/18/89 adjusted erasing region in vtGraph and atGraph for VGA
+* 08/18/89 changed wording in Introduction and Heading to fit on VGA screen
+* 08/18/89 replaced blank tag -font- commands with do SetBodyFont
+* 08/17/89 in WTSimulation and Simulation, removed calls to InitScreen upon zreshape
+*	(InitScreen gets called upon reshape anyway by being an imain unit)
+* 08/17/89 removed call to do InitScreen in ieu before imain InitScreen
+* 08/17/89 moved calls to SetMinScreen in InitScreen to BEFORE do SetScreen
+* 08/17/89 extracted code for displaying Ynewline and Screen and put in ShowYnewline
+* 08/17/89 CHECK: Can variable fonty be removed?? Does it have correct value for EGA, VGA?
+* 08/17/89 checked Left-Adjust style on Introductory messages, etc.
+* 08/17/89 added SetBodyFont, called by InitScreen to set font AFTER setting Screen
+* 08/17/89 modified SetNumbersFont
+* 08/17/89 changed SetFont to use MachineType instead of Screen
+* 08/17/89 added global constant Cutpoint, used by SetScreen to distinguish EGA frm VGA
+* 08/16/89 removed unit DefaultScreen; placed code in SetScreen
+* 08/16/89 commented out do InitScreen in ieu after imain InitScreen
+* 08/16/89 put code for determining IBM screen on basis on Ynewline in SetScreen
+* 08/14/89 replaced calls to RestoreFont with blank tag -font- command
+* 	put code for setting Ynewline into unit SetYnewline, called by InitScreen
+* 08/11/89 in InitScreen, set Mouse according to MachineType
+* 08/11/89 changed values for EGA and VGA in SetNumbersFont
+* 08/11/89 in unit InitScreen changed color commands to depend upon IBMPC MachineType
+* 08/11/89 changed ScreenMenus to use MachineType
+* 08/11/89 changed values in RestoreFont
+* 08/11/89 set global variable MachineType in ieu
+* 08/11/89 rewrote DefaultScreen to sense EGA vs. VGA Screens
+* 08/11/89 added global constant MachineType, set manually in DefaultScreen
+* 08/11/89 added 3 global constants MACINTOSH, IBMPC, WORKSTATION
+* 08/06/89 separated calcs of determining ordinate and color in Plot
+* 08/06/89 made several small changes to correct problems with EGA display
+* 08/06/89 adjusted bounds in vtGPsetup slightly for more evenly spaced tick marks
+* 08/06/89 moved setting of CorrectGraphVisible from Plot to FindErrors
+* 08/06/89 removed Carnegie Mellon from title page
+* 08/06/89 changed version number to 1.1
+* 08/06/89 redefined zred, zblue and zmagenta for EGA in InitScreen
+* 08/05/89 moved PAUSE code in Plot before code for moving ball
+* 08/05/89 added message UseShiftClickMSG in GiveHint
+* 08/05/89 shortened messages in Kudos for MacSE
+* 08/04/89 fixed bug in Plot in which CorrectGraphVisible set too early
+* 08/04/89 edited Kudos for SE, telling # tries
+* 08/04/89 increased tolerances xeps and yeps in unit HandleTk
+* 08/04/89 expanded GiveHint to suggest using v-t and a-t graphs after NtriesSincevtat > 5,
+*	clear graphs if NcurvesVisible > 3 and use Help if (Ntries > 5)&(mod(Ntries,5)=0)
+* 08/04/89 modified Kudos to tell number of times ball rolled.
+* 08/04/89 added global variable Ntries, number of times ball is rolled before success
+* 08/04/89 routine GiveHint suggests clearing graphs if (current < 3) and (NcurvesVisible > 3)
+* 08/04/89 changed GiveAHint to GiveHelp
+* 08/04/89 UpdateErrorDisplay only highlights after student graph is visible
+* 08/03/89 changed UpdateHelpDisplay to highlight only one error at a time
+* 08/03/89 Plot routine erases a line segment before advancing ball to
+*	make visible plotting over existing curve
+* 08/03/89 Help now seems to work in serial order of ramps traveled on
+* 08/03/89 changed InclineErrorMsg and UpdateTrckError to use serial order of ramps
+* 08/03/89 changed UpdateTrckError, UpdateIPos, UpdateIVel to make all highlighting solid
+* 08/03/89 changed FindErrors to assign Errors according to serial order
+* 08/02/89 changed ComputeRampsUsed; changed InitExample to LoadGivData
+* 07/30/89 changed unit FindErrors to reflect new interpretation of RampsUsed
+* 07/29/89 added routine Trace2 for debugging
+* 07/29/89 to enable Help to refer to incorrect ramp slopes in order of traversal, 
+*	(rather than left to right), changed definition of array RampsUsed in unit Plot: 
+*	and global GivRampsUsed and StuRampsUsed-- indexed by serial, ramp number values
+* 07/28/89 in unit Plot, calculation of trialramp seems to fail on horizontal tracks with v = -10cm/s
+* 07/27/89 removed condition t>tMAX from unit Plot to fix bug of extraneous ball image
+* 07/27/89 commented out calls to logging routines, -use- file log.t
+* 07/30/89 commented out calls to routines in log.t
+********** LOG version 1.0, July 20, 1989 **********
+* 07/20/89 added calls to AppendToLogFile in PrepareExample and SwitchHelp, Initialize
+* 07/18/89 added -use- file log.t, call to PromptForName in unit TitlePage
+******************************************************
+*	version 1.0
+******************************************************
+* 06/18/89 commented out debugging routines to reduce size of binary
+* 06/12/89 adjusted horizontal edge of 0 clearing box for MacSE
+* 06/12/89 removed call to DrawPosScale in TellAboutInclination
+* 06/12/89 changed x to s in LabelAxes 
+* 06/12/89 changed message in TellAboutInclination to refer to position scale, s, along track
+* 06/12/89 changed DefaultScreen to give MacII whenever zwidth >= 620
+* 06/08/89 added condition abs(v) > 0 to call DropBall in unit Plot
+* 06/08/89 removed clrkey from Flash, BlinkBox and BlinkJunction to eliminate missed mouse-clicks
+* 06/07/89 commented out code dependent upon Screen = WRKSTN
+* 06/07/89 modified Flash to reduce size of flashing box for Mac II version
+* 06/07/89 modified InitScreen comp of TTrck to ensure clearing of ball on high posts
+* 06/07/89 modified DrawPosScale to flash label x until next mouse click
+* 06/07/89 modified DrawTrck to call LabelPosts only when WalkThrough = FALSE
+* 05/22/89 uncommented menu  Screen
+* 05/22/89 modified unit LabelPosts to clear label 10 on SE, Mac II
+* 05/22/89 unit Plot calls DropBall only if not WalkThrough
+* 05/22/89 commented out IBM-specific colors, EGA -plot-; set default screen to Mac
+* 05/16/89 added routine DropBall to display ball on table when it runs off the end
+* 05/12/89 modified units InitScreen, vtGraph and LabelDimensions to suit EGA
+* 05/12/89 changed unit Introduction so that EGA message is displayed
+* 05/12/89 modified unit LabelDimensions
+* 05/12/89 added unit LabelPosts to display height values beneath posts
+* 05/12/89 reduced font size in LabelRamps to zsans "10"
+* 05/12/89 assigned color zdefaultb for goal graph in unit Plot
+* 05/12/89 increased VMAX to 150 to avoid plotting vt outside clip region
+* 05/10/89 modified Labelgy in unit InitScreen for EGA
+* 05/10/89 modified unit LabelDimensions for EGA
+* 05/10/89 lowered BBox by 2 pixels in unit Flash
+* 05/10/89 adjusted EGA vertical clearing position for origin in vtGraph and atGraph
+* 05/10/89 unit Introduction now calls IntroText for Screen = EGA
+* 04/05/89 changed zblack to zdefaultf and commented out wcolor
+* 04/05/89 changed color 9 to color 11 (cyan) at $$IBM
+* 04/05/89 changed colorw to 15 (high intensity white) at $$IBM
+* 04/05/89 changed zred to 12, zmagenta to 13 and zblue to 9 at $$IBM
+* 04/05/89 condition EGA matches MacSE, VGA matches MacII
+* 04/05/89 added constants ONEbutton, TWObutton, and variable Mouse
+* 04/05/89 removed constant IBMPC and added EGA and VGA
+* 04/03/89 added (Screen = IBMPC) to tests involving references to left mouse button
+* 04/03/89 assigned Screen to IBMPC in DefaultScreen
+* 04/03/89 commented out code in DefaultScreen and ScreenMenus for IBM version
+* March 28 release NSTA April 6
+* 03/27/89 made minor adjustments to LabelDimensions and DrawPosScale
+* 03/27/89 inserted test inside DoBall of Plot to compute correct y-value
+* 03/27/89 modified unit PlaceBall to erase ball at x = 0 or 500 CM
+* 03/27/89 modified ShowValues to include msg
+* 03/27/89 supplied missing "a" at "advance beyond junction"
+* 03/26/89 removed extraneous graph erasure from unit ClearGraph
+* 03/26/89 debugged unit Plot; in steep valleys (10,0,10) with high negative v0 (50-60),
+* 	ball appears to move below ramp on initial -move-
+* 03/25/89 changed ramp from global to local variable in units Plot, ComputeAccel
+* 03/25/89 rewrote unit Plot
+* 03/24/89 didn't fix bug in Plot related to vi=0 at a post position with slope up toward right
+* 03/24/89 replaced int(xx/yy) with xx$divr$yy for rXMAX, etc
+* 03/24/89 replaced (DT-DTjcn)*(DT-DTjcn)$divr$ 2 with DT2 in unit Plot
+* 03/21/89 removed mcolor; added colorw to ieu
+* 03/17/89 enabled Save/Delete current experiments menu in Free exploration
+* 03/14/89 upgraded syntax of color commands: zred ... , mcolor zdefault ... 
+* 03/09/89 fixed abscissa zero label display problem in units vtGraph and atGraph
+* 03/02/89 debugged and commented unit Plot
+* 03/01/89 wrote and tested routine ComputeJcnSpeeds 
+* 02/28/89 rewrote Plot to increase speed and satisfy energy conservation
+* 02/27/89 ran tests on configurations suggested by Elena
+* 01/30/89 added color to xt,vt,atGraph, DrawTrck, HandlelTk, Plot, LabelAxes and InitScreen
+* 01/13/89 put Left Adjust style in Kudos message
+* 01/12/89 added initialization CurrentError := 0 to Simulation
+* 01/11/89 commented out WRKSTN test inside Plot loop [@@@@]
+* 01/11/89 Added Left Adjust style to most messages in MessPort
+* 01/11/89 changed InitStuData to give post heights 5,3,1,1,1,1
+* 01/11/89 fixed bug in UpdateHelp, small wording changes in GiveAHint
+* 01/11/89 commented out menu Screen; Workstation
+* 01/04/89 added 1989 copyright notice on title page
+* 12/30/88 in unit InitScreen, placed calc of Ynewline before call to SetMinScreen
+* 12/30/88 modified credits page slightly, added Free exploration to ClearMenus
+* 12/29/88 reworked Help flags, calling SwitchHelpOff in unit PrepareExample
+* 12/22/88 modified walk-through to introduce entire track adjust facility
+* 12/22/88 added facility to raise/lower tracks arrangement by dragging  with rt button
+* 12/21/88 restructured menus by eliminating unit UpdateMenus
+* 12/21/88 added Free exploration facility to suppress given graph
+* 12/21/88 adjusted ScaleFrac so that right-most posts clear on MacSE
+* 12/19/88 modified HtTrck in InitScreen to use shorter (3/4) blocks on MacSE
+* 12/19/88 modified DrawTrack to plot icons for blocks
+* 12/13/88 added copyright notice
+* 12/08/88 added marker Version and initialize it in ieu after calling Setup
+* 12/08/88 added instructions for shift-click on Roll feature
+* 12/07/88 added facility for pausing animation by shift-click on Roll (right button)
+******************************************************
+*	$$ start
+@1pl8000coarse	8,16
+@1pl4006define	m: Version  $$ string containing version information
+	i: NREC = 20  $$ maximum number of examples that can be stored in file
+	NGIVEN = 8  $$ number of given examples in program
+	NPOSTS = 6  $$ number of posts
+	NRAMPS = NPOSTS-1 $$ number of ramps
+
+	CM = 1000000  $$ centimeter unit for integer computations (1 X 10E6)
+	S = 100  $$ seconds unit for integer computations 
+	R2 = 64, R4 = R2*R2  $$ scale factors used in unit Plot to avoid integer overflow
+	CMperS = CM $divt$ S
+	CMperS2 = CMperS $divt$ S
+	MAXINT = 2147483647  $$ maximum integer, 2^31
+	DT  $$ time increment, set by SetTimeIncrement
+	DT2  $$ one-half of DT squared, set by SetTimeIncrement
+	DTjcn  $$ time interval from current position to next junction
+	TimeSet  $$ flag indicating that machine has been calibrated DT and DT2 have been set
+
+	LEN = 100 CM  $$ length of ramp (centimeters)
+	XMAX = 500 CM  $$ centimeters (horizontal)
+	YMAX = 10 CM  $$ centimeters (vertical)
+*	VMAX = 120 CMperS  $$ maximum velocity for graphing limits (centimeters/sec)
+	VMAX = 150 CMperS  $$ maximum velocity for graphing limits (centimeters/sec)
+	VIMAX = 60 CMperS  $$ maximum initial velocity (centimeters/sec)
+	TMAX = 25 S  $$ seconds
+	G = 980 CMperS2  $$ acceleration of gravity
+	A = int(9.8 CMperS2) $$ acceleration along ramp with 1% grade (centimeters per second squared)
+	AMAX = 100 CMperS2
+
+	rXMAX = XMAX$divr$CM  $$ reduced XMAX
+	rYMAX = YMAX$divr$CM  $$ reduced YMAX
+	rVMAX = VMAX$divr$CMperS  $$ reduced VMAX
+	rVIMAX = VIMAX$divr$CMperS  $$ reduced VIMAX
+	rTMAX = TMAX$divr$S  $$ reduced TMAX
+	rAMAX = AMAX$divr$CMperS2  $$ reduced AMAX
+	rLEN = LEN$divr$CM  $$ reduced ramp length
+
+	GIVEN = 91, STUDENT = 92  $$ flag indicating whether data is given or student
+	POS = 441, VEL = 442, ACC = 443  $$ (constants must be sequential, with unit increments)
+	TRK = 444, IP = 445, IV = 446, HELP = 447, ROLL = 448, CLEAR = 449
+	NONE = 450  $$ constants naming mouse click regions
+	toROLL = 551, toSTOP = 552  $$ passed to unit UpdateRollButton to toggle label
+	RollState  $$ used by unit Plot to flag whether to pause at next change of slope
+	PAUSE = 661, CONTINUE = 662  $$ values of RollState
+	MsgVisible  $$ variable indicating contents of message in MessPort
+	InstrMSG = 771, ClrGrphMSG = 772, UsevtatMSG = 773, UseHelpMSG = 774, UseShiftClickMSG = 775
+*		$$ values of MsgVisible
+
+	Region  $$ values indicate touch region (POS, VEL, ACC, TRK, IP, IV, HELP)
+	WalkThrough  $$ flag indicating student has selected walk-through mode
+	Dashed  $$ flag indicating whether student graph is dashed or solid
+	Help  $$ flag indicating whether Help is ON
+	ContHelp  $$ flag indicating whether Continuous Help is ON
+	FirstHelp  $$ flag FALSE indicates help has been given on current student example
+	StuGraphVisible  $$ flag indicating whether a student graph has been plotted (at least partially)
+	GivGraphVisible  $$ flags whether given graph is plotted, selectable by menu option
+	CorrectGraphVisible  $$ flag indicating whether student graph is correct (used by UpdateHelpDisplay)
+	NcurvesVisible  $$ number of curves plotted by Plot without clearing graphs
+	IPshaded  $$ flag indicating whether IPlabel is shaded
+	IVshaded  $$ flag indicating whether IVlabel is shaded
+	Ntries  $$ number of times ball is rolled before problem is solved
+	NtriesSincevtat  $$ number of times balled rolled since rolling with v-t or a-t graph displayed
+
+	MachineType  $$ variable indicating MACINTOSH, IBMPC or WORKSTATION
+	MACINTOSH = 68020
+	IBMPC = 80286
+	WORKSTATION = 3000000
+	EGA = 224000 $$ 640 X 350
+	VGA = 306560 $$ 640 X 479  (must be distinguishable from Mac II) 
+	MacSE = 153600  $$ 512 X 300
+	MacII = 307200  $$ 640 X 480
+	WRKSTN = 1097600  $$ 1120 X 980
+	Screen  $$ variable indicating screen size (EGA, VGA, MacSE, MacII, or WRKSTN)
+	Cutpoint = 16  $$ used by SetScreen to distinguish EGA from VGA
+	OnTitlePage  $$ flag used by imain InitScreen, set by TitlePage, for determining Screen menus
+
+	ONEbutton = 11111
+	TWObutton = 22222
+	Mouse  $$ variable indicating mouse with one (ONEbutton), or two-three buttons (TWObutton)
+
+	RECSIZE = 9  $$ first six numbers are post heights, 7th and 8th are x0, vo; 9th is example number
+	gtdata(NGIVEN + NREC, RECSIZE)
+	GivData(RECSIZE)
+	StuData(RECSIZE)
+
+	GivRampsUsed(NRAMPS)  $$ ball rolls on each ramp (T/F ?), from GivData
+	StuRampsUsed(NRAMPS)  $$ ball rolls on each ramp (T/F ?), from StuData
+	GivSlopes(NRAMPS)  $$ slope of ramp, from GivData
+	StuSlopes(NRAMPS)  $$ slope of ramp, from StuData
+	Errors(2+NRAMPS)  $$ array of T/F for errors on xi, vi and ramp slopes
+	ErrorNum  $$ number of errors in current student experiment
+	CurrentError  $$ set and used by routine UpdateHelpDisplay
+	LastError  $$ used for clearing highlight of error display; set in UpdateHelpDisplay
+
+	gtype, oldgtype  $$ have values POS, VEL, ACC
+	current  $$ current example number (1 ... NGIVEN + NREC)
+	CurrStored  $$ current number of problems stored in gt.dat (0 ... NREC)
+	NumRemote  $$ number of examples stored in /afs/andrew.cmu.edu/cdec/ctapps/gt/gt.dat
+
+	Xfine = 640, Yfine = 480
+	X1, Y1, X2, Y2 $$ port coordinates
+	X, Y, Xold, Yold  $$ absolute screen coordinates of ball
+	Lmar = 10, Rmar = 630  $$ left and right margins
+	Tmar = 10, Bmar = 470  $$ top and bottom margins
+	WdButton  $$ fixed horizontal width of each button in TypePort, computed using zwidth
+	HtButton  $$ fixed vertical height of buttons in TypePort, computed using zheight
+	WdLabel  $$ fixed width of labels for IPosPort and IVelPort; determines origin of tracks
+	HtLabel  $$ fixed height of labels for IPosPort and IVelPort
+	WdOrdLabel  $$ fixed width of ordinate graph label
+	THilight, BHilight  $$ top and bottom of ramp highlight bars
+	Gap  $$ half separation between adjacent buttons
+	TType = Tmar
+	BType $$ bottom edge of TypePort, BType := TType + HtButton 
+	LType  $$ left edge of TypePort, computed using zwidth and WdButton to be centered above GrphPort
+	RType  $$ right edge of TypePort, RType := LType + 3*WdButton
+	Lpos, Rpos, Lvel, Rvel, Lacc, Racc  $$ left and right edges of position, velocity and acceleration buttons
+	LGrph = 190  $$ left edge of GrphPort
+	RGrph  $$ right edge of GrphPort
+	TGrph $$ top edge of GrphPort, TGrph := BType + 2
+	BGrph  $$ bottom edge of GrphPort
+	TExam  $$ top edge of ExamPort
+	BExam  $$ bottom edge of ExamPort
+	RExam  $$ right edge of ExamPort
+	TPick  $$ top edge of PickPort
+	BPick  $$ Bottom edge of PickPort
+	TTrck  $$ top edge of TrckPort
+	BTrck  $$ bottom edge of TrckPort, to fit above fixed height IVPort and IPPort
+	LTrck  $$ left edge of TrckPort
+	RTrck = 460  $$ right edge of TrckPort
+	TrckOX, TrckOY   $$ origin of Tracks
+	WdTrck  $$ width of track (origin to right endpoint)
+	HtTrck  $$ height of track (origin to uppermost)
+	HtScale  $$ vertical height of IPosPort and IVPort
+	TIP  $$ top edge of IPosPort, TIP := BIP - HtScale
+	BIP  $$ bottom edge of IPosPort, BIP := TIV - 2
+	TIV  $$ top edge of IVPort, TIV := BIV - HtScale
+	BIV = Bmar $$ bottom edge of IVPort
+	LBall, RBall  $$ left and right edge of Ball button
+	TBall, BBall $$ top and bottom edge of Ball button
+	Ynewline  $$ height of newline, in fine coords
+	Fonty  $$ used to shift font vertically for VGA, EGA Screen button labels
+
+	i: xi  $$ current initial position
+	vi  $$ current initial velocity
+	xiold, viold $$ previous values of xi, vi for clearing markers
+
+	f: Thick  $$ thickness of track, in graphing coordinates
+	BlockHt  $$ height of a block, in graphing coordinates
+	BlockWd  $$ width of a block, in graphing coordinates
+	ScaleFrac = 0.94  $$ ratio of position scale length to IPosPort width (fine coords)
+	RampLabelgy  $$ vertical position of ramp labels below TrckPort, in graphing coords
+	PostLabelgy  $$ vertical position of post height numbers, in graphing coords
+	PostLabelgDy  $$ vertical height of post height numbers (set in InitScreen)
+
+	i: MacFudge = 15  $$ used in PlaceBall and Plot for positioning ball on MacSE
+	PCFudge = 0  $$ used in PlaceBall and Plot on IBM PC version
+	WksFudge  $$ used in PlaceBall and Plot for positioning of icons on Workstation
+
+	file: gtp  $$ pointer to the gt.dat file
+
+******************************************************
+*use	"log.t"  $$ LOG $$
+******************************************************
+*calc	MachineType := MACINTOSH  $$ MAC
+calc	MachineType := IBMPC $$ IBM
+*calc	MachineType := WORKSTATION
+do	Setup
+string	Version
+Version 2.1
+\
+
+do	RestoreIcons
+do	InitScreen
+imain	InitScreen
+wcolor	zdefaultb
+color	zdefaultf, zdefaultb
+
+******************************************************
+unit	TitlePage
+	merge,global:
+	i: ysave
+*	i: LP=160,TP=360,RP=480,BP=420  $$ LOG $$ coordinates of prompt box
+*	m: info  $$ LOG $$ name of user, date, obtained by PromptForUserInfo
+calc	OnTitlePage := TRUE
+menu	About Graphs and Tracks...,10:Credits
+if	(Screen = MacSE)|(Screen = EGA)
+	at	0.1Xfine, 0.1Yfine; 0.9Xfine, 0.9Yfine
+else
+	at	0.1Xfine, 0.2Yfine; 0.9Xfine, 0.9Yfine
+endif
+text
+@1fs  8c@1ff   1@1pl4002Graphs and Tracks@1fs8000@1ff8000
+
+@1fs  28Part I -- From Graphs to Motion@1fs8000
+
+
+@1ff   1David Trowbridge@1ff8000
+
+ 
+@1pl4006\
+
+calc	ysave := zwherey
+if	Screen = WRKSTN
+*	text	0.1Xfine, 0.9Yfine; 0.9Xfine, Yfine
+@1pl4002*(to run Part II -- From Motion to Graphs,
+*type @1ff   1gt2@1ff8000 in the typescript window)
+*<|s, Version|>, Copyright 1988, 1989, 1994, 2000
+@1pl4006*\
+else
+	text	0.1Xfine, 0.9Yfine; 0.9Xfine, Yfine
+@1pl4002<|s, Version|>, Copyright 1988, 1989, 1994, 2000
+@1pl4006\
+endif
+*do	PromptForUserInfo(LP,TP,RP,BP; info)  $$ LOG $$
+*do	CreateLogFile  $$ LOG $$
+*erase	LP,TP; RP,BP  $$ LOG $$
+*do	AppendToLogFile("******************")  $$ LOG $$
+*do	AppendToLogFile("Graphs and Tracks, Part I")  $$ LOG $$
+*do	AppendToLogFile("******************"+<|cr|>)  $$ LOG $$
+*do	AppendUserInfo(info)  $$ LOG $$
+do	PromptForInstructions(ysave)
+
+**********
+unit	PromptForInstructions(ycurrent)
+	merge,global:
+	i: ycurrent
+	LPrompt = 20, RPrompt, TPrompt, BPrompt = 470
+	Buttonx, Button1y, Button2y, ButtonSepy, Radius = 8
+calc	RPrompt := Xfine-20
+	TPrompt := ycurrent + 0.25*(Yfine-ycurrent)
+	ButtonSepy := 0.2*(Yfine-ycurrent)
+	Button1y := TPrompt+5
+	Button2y := TPrompt+ButtonSepy+5
+text	LPrompt, TPrompt; RPrompt, BPrompt
+@1ff   2@1pl4002Your first time?   Click here for instructions.@1ff8000
+@1pl4006\
+calc	Buttonx := zwherex + 50	
+text	LPrompt, TPrompt+ButtonSepy; RPrompt, BPrompt
+@1ff   2@1pl4002You've used this program before?   Click here.@1ff8000
+@1pl4006\
+at	Buttonx, Button1y
+plot	zk(O)
+at	Buttonx, Button2y
+plot	zk(O)
+loop
+	pause	keys = touch, next
+	if	((Button1y-Radius <= ztouchy <= Button1y+Radius)&(Buttonx-Radius <= ztouchx <= Buttonx+Radius))|(zkey = zk(next))
+		calc	WalkThrough := TRUE
+		at	Buttonx, Button1y
+		plot	zk(o)
+		pause	0.5
+		outloop
+	elseif	(Button2y-Radius <= ztouchy <= Button2y+Radius)&(Buttonx-Radius <= ztouchx <= Buttonx+Radius)
+		calc	WalkThrough := FALSE
+		at	Buttonx, Button2y
+		plot	zk(o)
+		pause	0.5
+		outloop
+	endif
+endloop
+erase
+do	CheckFile(; CurrStored, NumRemote)
+calc	OnTitlePage := FALSE
+do	InitProgram
+if	WalkThrough
+	jump	WTSimulation  $$ Walk-through simulation
+else
+	jump	Simulation
+endif
+
+**********
+unit	Credits
+menu	About Graphs and Tracks...
+mode	write
+erase
+if	(Screen = MacSE)|(Screen = EGA)
+	at	0.05Xfine, 0.05Yfine; 0.95Xfine, 0.95Yfine
+else
+	at	0.05Xfine, 0.2Yfine; 0.95Xfine, 0.95Yfine
+endif
+text
+@1ff   3Graphs and Tracks is based upon:@1ff8000
+
+
+  Research and curriculum development by the Physics Education Group, 
+     University of Washington
+
+  Preliminary design at the Educational Technology Center, University of California, Irvine
+
+  A prototype by Wilfred J. Hansen of the Information Technology Center, 
+     Carnegie Mellon University
+
+  A drawing editor, draw.t,  written by Bruce Sherwood, Carnegie Mellon University
+
+@1ff   3Designed and developed by David Trowbridge
+@1ff8000
+@1ff   3@1pl4004Click anywhere to continue.@1ff8000
+@1pl4006\
+
+pause	keys=touch, all
+do	JumpToTitlePage
+
+**********
+unit	WTSimulation
+*	Walk-through simulation
+	merge,global:
+	i: Done
+	WalkCount  $$ number of times that user has performed a given operation in WalkThrough section
+	RegionRequested  $$ integer indicating which region is requested by walk-through section
+do	Initialize
+do	InitStuData
+do	LoadGivData(current)
+do	ZeroRampsUsed
+calc	RegionRequested := VEL  $$ first step is to click on velocity graph type 
+	Done := FALSE 
+*	Done := TRUE 
+	WalkCount := 0
+*do	ShowPorts
+do	InitWTMenus
+do	ShowExampleNumber
+do	DisplayButtons
+do	Hilight(gtype)
+do	DisplayGraph
+do	RedrawArrangement
+do	Introduction
+*do	AppendToLogFile("Beginning instructions.")  $$ LOG $$
+loop	$$ walk-through section
+	if	not(Done)
+		do	TellHowTo(RegionRequested, WalkCount)
+	else
+		do	TellAboutInclination
+		calc	WalkThrough := FALSE
+	endif
+	do	TrckPort  $$ to ensure that zgtouchx and zgtouchy have correct values in unit HandleTk
+	pause	keys=touch(left: down; right: down)
+	outloop	~WalkThrough
+	do	GetRegion(; Region)
+reloop	(zkey = zk(right:down))&(Region != ROLL)&(Region != TRK)  $$ Right down-click accepted in Roll, Trk only
+*	do	TellRegions(Region, RegionRequested)
+	if	(Region = RegionRequested) & not(Done)
+		case	Region
+		POS
+			calc	gtype := POS
+			do	Hilight(gtype)
+			do	xtGraph
+			do	Plot(GIVEN,gtype)  $$ plot graph without rolling ball
+			calc	RegionRequested := IP
+				WalkCount := 0
+		VEL
+			calc	gtype := VEL
+			do	Hilight(gtype)
+			do	vtGraph
+			do	Plot(GIVEN,gtype)
+			calc	RegionRequested := ACC
+		ACC
+			calc	gtype := ACC
+			do	Hilight(gtype)
+			do	atGraph
+			do	Plot(GIVEN,gtype)
+			calc	RegionRequested := POS
+		TRK
+			do	HandleTk
+			calc	WalkCount := WalkCount + 1
+			if	WalkCount >= 3
+				calc	RegionRequested := ROLL
+					WalkCount := 0
+				do	UpdateRollButton(toROLL)
+			else
+				calc	RegionRequested := TRK
+			endif
+		IP
+			do	HandleIP
+			calc	WalkCount := WalkCount + 1
+			if	WalkCount >= 2
+				calc	RegionRequested := IV
+					WalkCount := 0  $$ reinitialize for TRK
+			else
+				calc	RegionRequested := IP
+			endif
+		IV
+			do	HandleIV
+			calc	RegionRequested := TRK
+		ROLL
+			if	(WalkCount = 0)$$ &(zkey = zk(left: down))
+				calc	WalkCount := WalkCount + 1
+				do	RollBall(CONTINUE)
+			elseif	(WalkCount > 0)$$ &(zkey = zk(right: down))
+				do	RollBall(PAUSE)
+				calc	Done := TRUE
+			endif
+		endcase
+	endif
+endloop
+jump	Simulation
+*
+
+**********
+unit	Simulation
+if	zreshape
+	calc	Help := FALSE
+		ContHelp := FALSE
+		FirstHelp := TRUE
+endif
+do	Initialize
+do	InitStuData
+do	LoadGivData(current)
+do	ZeroRampsUsed
+do	InitMenus
+*do	ShowPorts
+do	ShowExampleNumber
+do	DisplayButtons
+calc	oldgtype := 0  $$ initialized to be DIFFERENT from POS, VEL or ACC
+do	Hilight(gtype)
+do	DisplayGraph
+do	RedrawArrangement
+calc	MsgVisible := 0  $$ to force Instructions
+do	Instructions
+do	UpdateRollButton(toROLL)
+calc	CurrentError := 0
+	Ntries := 0
+	NtriesSincevtat := 0
+*do	AppendExampleToLogFile(current) $$ LOG $$
+loop	$$ Simulation
+	do	FindErrors
+	if	GivGraphVisible
+		if	(ErrorNum = 0)&CorrectGraphVisible
+			do	Kudos
+		else
+			do	GiveHint
+			do	UpdateHelpDisplay
+		endif
+	endif
+	do	TrckPort  $$ to ensure that zgtouchx and zgtouchy have correct values in unit HandleTk
+	calc	RollState := CONTINUE
+	pause	keys=touch(left:down; right:down)  $$ on Mac, "right button" means shift-click
+	do	GetRegion(; Region)
+reloop	(zkey = zk(right:down))&(Region != ROLL)&(Region != TRK)  $$ Right down-click accepted in Roll, Trk only
+*	do	TellRegions(Region, RegionRequested)
+	if	POS <= Region <= IV  $$ Region within the set {POS, VEL, ACC, TRK, IP, IV}
+		calc	FirstHelp := TRUE  $$ reset
+	endif
+	case	Region
+	POS
+		calc	gtype := POS
+*		do	AppendGraphType(gtype) $$ LOG $$
+		do	Hilight(gtype)
+		do	xtGraph
+		do	Plot(GIVEN,gtype)  $$ plot graph without rolling ball
+	VEL
+		calc	gtype := VEL
+*		do	AppendGraphType(gtype) $$ LOG $$
+		do	Hilight(gtype)
+		do	vtGraph
+		do	Plot(GIVEN,gtype)
+	ACC
+		calc	gtype := ACC
+*		do	AppendGraphType(gtype) $$ LOG $$
+		do	Hilight(gtype)
+		do	atGraph
+		do	Plot(GIVEN,gtype)
+	TRK
+		do	HandleTk
+		if	Help & ~ContHelp
+			do	SwitchHelpOff
+		endif
+	IP
+		do	HandleIP
+		if	Help & ~ContHelp
+			do	SwitchHelpOff
+		endif
+	IV
+		do	HandleIV
+		if	Help & ~ContHelp
+			do	SwitchHelpOff
+		endif
+	HELP
+		if	Help
+			calc	FirstHelp := FALSE
+		endif
+		if	~ContHelp
+			do	SwitchHelpOff
+		endif
+	ROLL
+		if	zkey = zk(right: down)
+			do	RollBall(PAUSE)
+		elseif	zkey = zk(left: down)
+			do	RollBall(CONTINUE)
+		endif
+	CLEAR
+		do	ClearGraph
+	endcase
+endloop
+*
+
+**********
+unit	Initialize
+calc	current := 1
+*calc	current := 2 $$ LOG $$ (Research-only)
+calc	gtype := POS  $$ x vs. t graph
+	oldgtype := 0  $$ initialized to be DIFFERENT from POS, VEL or ACC
+	Region := NONE  $$ initialization only
+
+**********
+unit	GetRegion(; region)
+	merge,global:
+	i: region
+if	(LTrck < ztouchx < RTrck)&(TTrck < ztouchy < BIV)
+	if	TTrck < ztouchy < BTrck
+		calc	region := TRK
+	elseif	TIP < ztouchy < BIP
+		calc	region := IP
+	elseif	TIV < ztouchy < BIV
+		calc	region := IV
+	else
+		calc	region := NONE
+	endif
+elseif	(LType < ztouchx < RType)&(TType < ztouchy < BType)
+	if	Lpos < ztouchx < Rpos
+		calc	region := POS
+	elseif	Lvel < ztouchx < Rvel
+		calc	region := VEL
+	elseif	Lacc < ztouchx < Racc
+		calc	region := ACC
+	else
+		calc	region := NONE
+	endif
+elseif	(LGrph < ztouchx < RGrph)&(TGrph < ztouchy < BGrph)
+	calc	region := CLEAR
+elseif	(RTrck < ztouchx < Rmar)&(BExam < ztouchy < Bmar)  $$ within HelpPort
+	calc	region := HELP
+elseif	(LBall < ztouchx < RBall)&(TBall < ztouchy < BBall)
+	calc	region := ROLL
+else
+	calc	region := NONE
+endif
+
+**********
+unit	TellHowTo(Requested, Times)
+	merge,global:
+	i: Requested, Times
+mode	write
+do	MessPort
+do	PtErase
+case	Requested
+POS
+	if	Times = 0
+		pause	0.5
+		write	You may use any of these three graphs to work each example.
+			
+			Now return to the position graph by clicking on @1ff   1position@1ff8000.
+	endif
+	do	Flash(POS, Times)
+VEL
+	write	Note that the graph for the actual motion (solid curve) does NOT match the given graph (dotted).  Your task is to match the graphs.  
+	if	Screen != MacSE
+		write	
+			
+			
+	endif	
+	write	To select a graph type, click on the graph title.  Now click on @1ff   1velocity@1ff8000.
+	do	Flash(VEL, Times)
+ACC
+	write	Here is the velocity graph for Example 1.  
+		
+		
+	pause	1
+@1pl8000	write	Now click @1ff   1acceleration@1ff8000.
+@1pl4006	do	Flash(ACC, Times)
+TRK
+	if	Times = 0
+		pause	0.5
+		if	Mouse = TWObutton
+			write	Move the pointer near the top of the left-most post.  Press and hold down the @1ff   2left@1ff8000  mouse button.   Adjust the post up or down by dragging the mouse.  
+		else
+			write	Move the pointer near the top of the left-most post.  Press and hold down the mouse button.   Adjust the post up or down by dragging the mouse.  
+		endif
+		do	Flash(TRK, Times)
+	elseif	Times = 1
+		if	Mouse = TWObutton
+			write	You may raise or lower the entire track by dragging the mouse while you hold down the @1ff   2right@1ff8000  button down.  Try this at the first post.  
+		else
+			write	You may raise or lower the entire track by holding down the @1ff   2shift@1ff8000  key as you drag the mouse.  Try this at the first post.  
+		endif
+		do	Flash(TRK, Times)
+	elseif	Times = 2
+		write	Adjust the post one more time for practice.  
+		do	Flash(TRK, Times)
+	endif
+IP
+	if	Times = 0
+		write	Click on the scale of @1ff   1Initial position@1ff8000 below to place the ball at a starting position.  
+		do	Flash(IP, Times)
+	elseif	Times = 1
+		write	Try another @1ff   1Initial position. @1ff8000
+		do	Flash(IP, Times)
+	endif
+IV
+	write	Now click on the @1ff   1Initial velocity@1ff8000 scale to set a starting velocity.
+		
+		Negative values correspond to motion to the left, positive values to the right.
+	do	Flash(IV, Times)
+ROLL
+	pause	0.5
+	if	Times = 0
+		if	Mouse = TWObutton
+			write	Click on @1ff   1Roll@1ff8000 with the @1ff   2left@1ff8000  button to start the ball rolling.  
+		else
+			write	Click on @1ff   1Roll@1ff8000 to start the ball rolling.  
+		endif
+		do	Flash(ROLL, Times)
+	elseif	Times = 1
+		if	Mouse = TWObutton
+			write	You may view the animation in short segments by clicking on @1ff   1Roll@1ff8000 with the @1ff   2right@1ff8000 mouse button.  Then click again to continue.  Try it.
+		else
+			write	You may view the animation in short segments by holding down the @1ff   2shift@1ff8000  key when you click on @1ff   1Roll@1ff8000.  Then click again to continue.  Try it.
+		endif
+		do	Flash(ROLL, Times)
+	endif
+endcase
+mode	xor
+
+**********
+unit	TellRegions(reg, req)
+	merge,global:
+	i: j, reg, req
+*mode	write
+*erase	191,238; 412,286
+*at	191,238; 412,286
+*calc	j := reg - POS-1
+*write	Region: 
+*write	\j\\\POS\VEL\ACC\TRK\IP\IV\HELP\ROLL\NONE
+*calc	j := req - POS-1
+*write	
+*	RegionRequested: 
+*write	\j\\\POS\VEL\ACC\TRK\IP\IV\HELP\ROLL\NONE
+*mode	xor
+
+**********
+unit	TellAboutInclination
+menu	Free exploration,12: HideGivenGraph  $$ allow jump to Free exploration
+mode	write
+do	HeadPort
+do	PtErase
+do	MessPort
+do	PtErase
+@1pl8000*write	The position of the ball is indicated by the horizontal scale, x.  
+@1pl4006write	The position of the ball, s, is measured from left to right along the track.  
+case	Screen
+VGA, MacII
+	write	
+		
+		
+endcase	
+@1pl8000*write	As shown by the centimeter scales below, the ramp inclinations are @1ff   1highly@1ff8000 exaggerated.
+@1pl4006write	Ramp inclinations have been exaggerated for clarity.
+if	Screen = WRKSTN
+*	text	X1, Y2-2HtLabel; X2, Y2
+@1pl4004*@1ff   0Click anywhere to begin, or select@1ff   1 Free exploration@1ff   3 @1ff   0from the menu.@1ff8000
+@1pl4006*\
+elseif	(Screen = MacSE)|(Screen = EGA)
+	text	X1, Y2-2.2HtLabel; X2, Y2
+@1ff   0@1pl4004Click to begin, or select@1ff   1 Free exploration@1ff   3 @1ff   0from the@1ff   3 @1ff   1Options @1ff   0menu@1ff   2.@1ff8000
+@1pl4006\
+else
+*	text	X1, Y2-2HtLabel; X2, Y2
+	text	X1, Y2-3.2HtLabel; X2, Y2
+@1ff   0@1pl4004Click anywhere to begin, or select@1ff   1 Free exploration@1ff   3 @1ff   0from the@1ff   3 @1ff   1Options @1ff   0menu.@1ff8000
+@1pl4006\
+endif
+do	LabelDimensions
+*do	DrawPosScale
+mode	xor
+
+**********
+unit	LabelDimensions
+do	TrckPort
+gvector	-30CM, 6CM; -30CM, 9 CM; -6
+gvector	-30CM, 3CM; -30CM, -1CM; -6
+case	Screen
+MacSE
+	gat	-75CM, 6CM; 0, 4CM
+EGA
+	gat	-60CM, 6.0CM; 0, 3CM
+else
+	gat	-55CM, 5.8CM; 0, 4CM
+endcase
+write	@1fsffec10 cm@1fs8000
+case	Screen
+MacSE
+	gvector	50CM, -3.2CM; 0, -3.2CM; -6
+	gvector	50CM, -3.2CM; 100CM, -3.2CM; -6
+	gat	20CM, -2.9CM; 100CM, -4.7CM
+EGA
+	gvector	50CM, -3.4CM; 0, -3.4CM; -6
+	gvector	50CM, -3.4CM; 100CM, -3.4CM; -6
+	gat	20CM, -3.3CM; 100CM, -6.4CM
+MacII, VGA
+	gvector	21CM, -3.1CM; 0, -3.1CM; -6
+	gvector	81CM, -3.1CM; 100CM, -3.1CM; -6
+	gat	25CM, -2.1CM; 100CM, -4.1CM
+WRKSTN
+*	gvector	23CM, -3CM; 0, -3CM; -3
+*	gvector	77CM, -3CM; 100CM, -3CM; -3
+*	gat	25CM, -2.5CM; 100CM, -4.5CM
+endcase
+write	@1fsffec100 cm@1fs8000
+mode	write  $$ to terminate -write- statement
+
+**********
+unit	RedrawArrangement
+do	ComputeSlopes(GIVEN)
+do	ComputeSlopes(STUDENT)
+do	DrawTrck
+calc	xi := xiold
+do	PlaceBall(xi)
+do	DrawIPos
+do	DrawIVel
+
+**********
+unit	Instructions
+do	TallMessPort
+mode	write
+if	GivGraphVisible
+	if	MsgVisible ~= InstrMSG
+		do	PtErase
+		if	(Screen = MacSE)|(Screen = EGA)
+			do	ShortInstructText
+		else
+			do	InstructText
+		endif
+		calc	MsgVisible := InstrMSG
+	endif
+else
+	do	PtErase
+	do	ExploreText
+endif
+mode	xor
+
+**********
+unit	InstructText
+text
+@1ff   1@1pl8000Try to reproduce the given graphs of position, velocity and acceleration.@1ff8000
+
+
+Set the initial position and velocity by clicking.  Adjust the tracks by dragging the mouse.  Start the ball by clicking @1ff   1Roll@1ff8000.  
+@1pl4006\
+
+if	Screen = WRKSTN  $$ Andrew menus
+*	write	Use the pop-up menus for other options, including selecting @1ff   1Examples@1ff8000 and getting @1ff   1Help@1ff8000.
+else	$$ Mac II or VGA menus
+	write	Use the menus at the top of the screen for other options, including selecting @1ff   1Examples@1ff8000 and getting @1ff   1Help@1ff8000.
+endif
+
+**********
+unit	ShortInstructText
+text
+@1ff   1@1pl8000Try to reproduce the given graphs of position, velocity and acceleration.  @1ff8000Set the initial position and velocity by clicking.  Adjust the tracks by dragging the mouse.  Start the ball by clicking @1ff   1Roll@1ff8000.
+@1pl4006\
+
+**********
+unit	ExploreText
+text
+@1pl8000Explore the connection between motions and graphs.  Clear graphs by clicking on them.
+@1pl4006\
+
+if	Screen = WRKSTN
+*	write	  When you are ready to continue with the exercises, select @1ff   1Problem examples@1ff8000 from the menu.
+else
+	write	  When ready to continue, select @1ff   1Problem examples@1ff8000 from the @1ff   1Options@1ff8000 menu.
+@1pl8000endif
+@1pl4006
+**********
+unit	Introduction
+mode	write
+case	Screen
+MacII, WRKSTN, VGA
+	do	Heading
+	do	MessPort
+	do	IntroText
+MacSE, EGA
+	do	MessPort
+	do	ShortIntroText
+endcase
+pause	keys = all, touch
+do	RollBall(CONTINUE)
+case	Screen
+MacII, VGA, WRKSTN
+	do	InstructionsHeading
+endcase
+
+**********
+unit	Heading
+do	HeadPort
+do	PtErase
+text	
+@1pl4002Welcome to
+@1fs  14@1ff   1Graphs and Tracks@1fs8000@1ff8000
+Part I: From Graphs to Motion
+@1pl4006\
+
+**********
+unit	InstructionsHeading
+do	HeadPort
+do	PtErase
+text	
+
+@1ff   1@1pl4002Instructions@1ff8000
+@1pl4006\
+mode	xor
+
+**********
+unit	IntroText
+do	PtErase
+*do	PtFrame
+text
+@1pl8000This program will give you practice interpreting graphs.  
+
+We show you the position, velocity and acceleration graphs for simple examples of motion.  You then set up a ball on sloping tracks that will generate those graphs. 
+@1pl4006\
+text	X1, Y2-Ynewline; X2, Y2
+@1ff   3@1pl4004Click anywhere to continue.@1ff8000
+@1pl4006\
+
+**********
+unit	ShortIntroText
+do	PtErase
+text
+@1pl8000We show you the position, velocity and acceleration graphs for simple examples of motion.  You then set up a ball on sloping tracks that will generate those graphs. 
+@1pl4006\
+text	X1, Y2-Ynewline+Fonty; X2, Y2
+@1ff   3@1pl4004Click to continue.@1ff8000
+@1pl4006\
+
+**********
+unit	SelectRollBall
+do	RollBall(CONTINUE)
+if	Help
+	calc	FirstHelp := TRUE 
+	do	UpdateHelpDisplay
+endif
+
+**********
+unit	RollBall(RState)
+	merge,global:
+	i: RState
+*do	LogData(gtype; StuData)  $$ LOG $$
+calc	RollState := RState
+do	UpdateRollButton(toSTOP)
+do	Plot(STUDENT, gtype)
+do	UpdateRollButton(toROLL)
+
+**********
+unit	ShowExampleNumber
+mode	write
+do	ExamPort
+do	PtErase
+*write	Example <|s, GivData(RECSIZE)|>
+if	GivGraphVisible
+	write	Example <|s, current|> of <|s, NGIVEN+CurrStored|>
+endif
+mode	xor
+
+**********
+unit	Hilight(gphtype)
+	merge,global:
+	i: gphtype
+do	TypePort
+if	gphtype!=oldgtype
+*	mode	xor
+	case	oldgtype  $$ when removing a Hilight
+	POS
+		rorigin	Lpos, TType
+		do	HilightTitle
+	VEL
+		rorigin	Lvel, TType
+		do	HilightTitle
+	ACC
+		rorigin	Lacc, TType
+		do	HilightTitle
+	endcase
+	case	gtype
+	POS
+		rorigin	Lpos, TType
+	VEL
+		rorigin	Lvel, TType
+	ACC
+		rorigin	Lacc, TType
+	endcase
+	do	HilightTitle
+	calc	oldgtype := gphtype
+endif
+*
+
+**********
+unit	HilightTitle
+rbox	0,Gap; WdButton - Gap, HtButton; -2
+
+**********
+unit	xtGraph
+	merge,global:
+calc	gtype := POS  $$ x vs. t graph
+do	GrphPort
+do	PtErase
+*do	PtFrame
+do	xtGPsetup
+scalex	rTMAX
+scaley	rXMAX
+do	SetNumbersFont
+*inhibit	update
+color	zdefaultf
+mode	write
+labelx	5
+color	zblue
+labely	100, 50
+do	SetBodyFont
+do	xtGPsetup  $$ needed to restore scalex and scale y
+mode	write
+*do	PtFrame
+*axes
+gdraw	0,0; 0, XMAX
+color	zdefaultf
+do	DashedLine
+do	LabelAxes
+*allow	update
+mode	xor
+*
+
+**********
+unit	xtGPsetup
+gorigin	LGrph+WdOrdLabel, BGrph-2Ynewline
+bounds	0, 0;abs((RGrph-LGrph)-2WdOrdLabel), abs((BGrph-TGrph)-3Ynewline)
+*	NOTE: abs() needed to work around bug in CT.EXE on PC ("Positive side of axis
+*	must have positive sign.")
+scalex	TMAX  $$ 25 seconds
+scaley	XMAX  $$ 500 centimeters
+*
+
+**********
+unit	vtGraph
+	merge,global:
+calc	gtype := VEL  $$ v vs. t graph
+do	GrphPort
+do	PtErase
+do	vtGPsetup
+scalex	rTMAX
+scaley	rVMAX
+do	SetNumbersFont
+*inhibit	update
+color	zdefaultf
+mode	write
+labelx	5
+color	zmagenta
+*labely	60, 10
+labely	50, 10
+case	Screen
+MacSE
+	gerase	-0.5,-15; 1, -45  $$ to erase zero on abscissa
+MacII
+	gerase	-1,-10; 1, -29  $$ to erase zero on abscissa
+EGA
+	gerase	-0.5,-7; 1, -36  $$ to erase zero on abscissa
+VGA
+	gerase	-0.3,-10; 1, -29  $$ to erase zero on abscissa
+WRKSTN
+*	gerase	-0.5,-4; 1, -27  $$ to erase zero on abscissa
+endcase
+color	zdefaultf
+markx	5  $$ to redraw axes and tick marks
+color	zmagenta
+*marky	60, 10
+marky	50, 10
+do	SetBodyFont
+do	vtGPsetup  $$ needed to restore scalex and scaley
+mode	write
+*do	PtFrame
+*axes
+gdraw	0, -VMAX; 0, VMAX	
+color	zdefaultf
+do	DashedLine
+do	LabelAxes
+*allow	update
+mode	xor
+*
+
+**********
+unit	vtGPsetup
+gorigin	LGrph+WdOrdLabel, TGrph+0.5*(BGrph-TGrph)
+*bounds	0, -0.45(BGrph-TGrph); (RGrph-LGrph)-2WdOrdLabel, 0.45(BGrph-TGrph)
+bounds	0, -0.47(BGrph-TGrph); (RGrph-LGrph)-2WdOrdLabel, 0.47(BGrph-TGrph)
+scalex	TMAX  $$ 25 seconds
+scaley	VMAX  $$ 150 centimeters/second
+*
+
+**********
+unit	atGraph
+	merge,global:
+calc	gtype := ACC  $$ a vs. t graph
+do	GrphPort
+do	PtErase
+do	atGPsetup
+scalex	rTMAX
+scaley	rAMAX
+do	SetNumbersFont
+*inhibit	update
+color	zdefaultf
+mode	write
+labelx	5
+color	zred
+labely	50, 10
+case	Screen
+MacSE
+	gerase	-1,-12; 1, -35  $$ to erase zero on abscissa
+MacII
+	gerase	-1,-7; 1, -25  $$ to erase zero on abscissa
+EGA
+	gerase	-0.4,-5; 1, -25  $$ to erase zero on abscissa
+VGA
+	gerase	-0.3,-7; 1, -25  $$ to erase zero on abscissa
+WRKSTN
+*	gerase	-0.5,-4; 1, -24  $$ to erase zero on abscissa
+endcase
+color	zdefaultf
+markx	5  $$ to redraw axes and tick marks
+color	zred
+marky	50, 10
+do	SetBodyFont
+do	atGPsetup  $$ needed to restore scalex and scaley
+mode	write
+*do	PtFrame
+*axes
+gdraw	0, -AMAX; 0, AMAX	
+color	zdefaultf
+do	DashedLine
+do	LabelAxes
+*allow	update
+mode	xor
+*
+
+**********
+unit	atGPsetup
+gorigin	LGrph+WdOrdLabel, TGrph+0.5*(BGrph-TGrph)
+bounds	0, -0.45(BGrph-TGrph); (RGrph-LGrph)-2WdOrdLabel, 0.45(BGrph-TGrph)
+scalex	TMAX  $$ 25 seconds
+scaley	AMAX  $$ 100 cm/sec@1ff  402@1ff8000
+*
+**********
+unit	DashedLine
+	merge,global:
+	i: dash, haxis  $$ parameters for creating dashed horizontal axis
+calc	dash := int(TMAX/100) 
+loop	haxis:=dash,TMAX, 5*dash
+	gdraw	haxis+dash,0;haxis+2*dash,0
+endloop
+
+**********
+unit	LabelAxes
+	merge,global:
+	i: j, LLab, TLab, RLab, BLab
+*do	GrphPort
+*do	PtFrame
+if	(Screen = MacSE)|(Screen = EGA)
+	calc	LLab := LGrph+0.5WdOrdLabel
+		RLab := LGrph+1.8WdOrdLabel
+		BLab := TGrph - 5
+		TLab := BLab - 1.2HtButton
+else
+	calc	LLab := LGrph+0.5WdOrdLabel
+		RLab := LGrph+1.8WdOrdLabel
+		BLab := TGrph - 5
+		TLab := BLab - 1.5Ynewline
+endif
+calc	j := gtype - 440
+erase	LLab, TLab; RLab, BLab
+*box	LLab, TLab; RLab, BLab
+at	LLab, TLab; RLab, BLab
+*write	\j\\\x (cm)@1ff  40 @1ff8000\v (cm/s@1ff  40 @1ff8000)\a (cm/s@1fsff9c@1ff  402@1fs8000@1ff8000)
+case	j
+1
+	color	zblue
+	write	s (cm)@1ff  40 @1ff8000
+2
+	color	zmagenta
+	write	v (cm/s)@1ff  40 @1ff8000
+3
+	color	zred
+	write	a (cm/s@1fsffec@1ff  402@1fs8000@1ff8000)
+endcase
+color	zdefaultf
+*  NOTE: There are superscript <space>'s immediately following x(cm) and v (cm/s)
+*  to force the position and velocity labels to appear at the same level as the accel label
+if	gtype = POS
+	at	RGrph-WdButton/3, BGrph-1.8HtButton; RGrph, BGrph
+else
+	at	RGrph-WdButton/3, TGrph + ((BGrph - TGrph)/2)-0.2HtButton; RGrph, BGrph
+endif
+write	t (s)
+
+**********
+unit	ClearGraph
+do	DisplayGraph
+calc	FirstHelp := TRUE 
+do	UpdateHelpDisplay
+
+**********
+unit	NextExample
+	merge,global:
+if	current = NGIVEN + CurrStored
+	calc	current := 1
+else
+	calc	current := current+1
+endif
+do	PrepareExample
+
+**********
+unit	PreviousExample
+	merge,global:
+if	current = 1
+	calc	current := NGIVEN + CurrStored
+else
+	calc	current := current - 1
+endif
+do	PrepareExample
+
+**********
+unit	PickExample
+	merge,global:
+	i: Number, Total
+calc	Total := NGIVEN+CurrStored
+mode	write
+do	Catalog
+do	PickPort
+do	PtErase
+write	Example (1-<|s, Total|>):
+inhibit	arrow
+arrow
+specs	nookno
+compute	Number
+ok	zreturn & (frac(Number) = 0) & (1 <= Number <= Total)
+	calc	current := Number
+endarrow
+do	PtErase
+mode	xor
+do	PrepareExample
+
+**********
+unit	Catalog
+do	HelpPort
+do	PtErase
+text	
+Simple	1-4
+Complex	5-8
+
+\
+if	CurrStored = 1
+	text	X1, zwherey; X2, Y2
+Custom	<|s, NGIVEN+CurrStored|>
+
+\
+elseif	CurrStored > 1
+	text	X1, zwherey; X2, Y2
+Custom	<|s, NGIVEN+1|>-<|s, NGIVEN+CurrStored|>
+
+\
+endif
+text	X1, zwherey + Ynewline; X2, Y2
+@1pl8000To add your own examples, set up any arrangement, then select @1ff   1Save current experiment@1ff8000.
+@1pl4006\
+
+**********
+unit	PrepareExample
+do	LoadGivData(current)
+do	ZeroRampsUsed
+*do	AppendExampleToLogFile(current)  $$ LOG $$
+do	InitStuData
+do	ComputeSlopes(GIVEN)
+do	ComputeSlopes(STUDENT)
+do	ShowExampleNumber
+do	SwitchHelpOff
+do	ExamplesMenus
+do	RedrawArrangement
+do	TypePort
+do	PtErase
+calc	gtype := POS
+	oldgtype := 0  $$ initialized to be DIFFERENT from POS, VEL or ACC
+	Ntries := 0
+	NtriesSincevtat := 0
+do	DisplayButtons
+do	Hilight(gtype)
+do	DisplayGraph
+*do	HelpPort
+*do	PtErase
+
+**********
+unit	DisplayGraph
+	merge,global:
+	f: t1, telapsed
+if	gtype = POS
+	do	xtGraph
+	calc	t1 := zclock
+	do	Plot(GIVEN, POS)  $$ plot graph without rolling ball
+	calc	telapsed := zclock - t1
+	if	~TimeSet
+		do	SetTimeIncrement(telapsed)
+		calc	TimeSet := TRUE
+	endif
+elseif	gtype = VEL
+	do	vtGraph
+	do	Plot(GIVEN, VEL)  $$ plot graph without rolling ball
+elseif	gtype = ACC
+	do	atGraph
+	do	Plot(GIVEN, ACC)  $$ plot graph without rolling ball
+endif
+*
+
+**********
+unit	SetTimeIncrement(telapsed)
+* Appropriate to Example #1, ball not animated
+	merge,global:
+	f: telapsed
+if	0.4 < telapsed		$$ Mac II: telapsed ~ 0.52 seconds
+				$$ Northgate 386/33: telapsed ~0.8 s
+	calc	DT := 10
+		DT2 := 50
+elseif	0.2 < telapsed <= 0.4		$$ Mac IIfx: telapsed ~ 0.25 seconds
+				$$ Quadra 950: telapsed ~ 0.23 seconds
+	calc	DT := 8
+		DT2 := 32
+elseif	telapsed <= 0.2		$$ something faster than a Quadra 950
+	calc	DT := 6
+		DT2 := 18
+endif
+**	DT2 :=  DT*DT $divr$ 2  $$ one-half (DT squared)
+*do	MessPort
+*do	PtErase
+*write	<|s, telapsed|> seconds
+*	DT = <|s, DT|>
+*	DT2 = <|s, DT2|>
+*pause
+	
+
+**********
+unit	HandleIP
+	merge,global:
+	f: touchx $$ 0 <= touchx <= 500
+do	IPosPort  $$ needed for IPmark
+calc	touchx := (ztouchx -TrckOX)*(rXMAX/WdTrck)
+*do	ShowTouch(touchx)
+if	abs(touchx*CM - xiold) < 20CM
+	do	IPmark(xiold)  $$ clear old mark
+	loop
+		do	IPmark(touchx*CM)  $$ draw new mark
+		pause	keys = touch(left: move, up)
+		do	IPmark(touchx*CM)  $$ clear old mark
+		calc	touchx := (ztouchx -TrckOX)*(rXMAX/WdTrck)
+		if	touchx > rXMAX
+			calc	touchx := rXMAX
+		elseif	touchx < 0
+			calc	touchx := 0
+		endif
+		outloop	zkey = zk(left: up)
+	endloop
+	calc	xi := 50CM*int((touchx+25)/50)
+	do	IPmark(xi)  $$ draw new mark
+	do	PlaceBall(xiold)  $$ clear ball 
+	do	PlaceBall(xi)  $$ draw ball at new position
+else
+	pause	keys = touch(left: up)
+	calc	touchx := (ztouchx -TrckOX)*(rXMAX/WdTrck)
+	calc	xi := 50CM*int((touchx+25)/50)
+*	do	ShowTouch(touchx)
+	if	xi!=xiold
+		do	IPmark(xiold)  $$ clear old mark
+		do	IPmark(xi)  $$ draw new mark
+		do	PlaceBall(xiold)  $$ clear ball 
+		do	PlaceBall(xi)  $$ draw ball at new position
+	endif
+endif
+calc	StuData(7) := xiold := xi
+*
+
+**********
+unit	IPmark(pos)
+	merge,global:
+	f: pos
+gat	pos/CM, 0
+plot	zk(-)
+*
+
+**********
+unit	HandleIV
+	merge,global:
+	f: touchx $$ -60 <= touchx <= 60
+do	IVelPort  $$ needed for IVmark
+calc	touchx := (ztouchx -TrckOX - WdTrck/2)*(2*rVIMAX/WdTrck)
+*do	ShowTouch(touchx)
+if	abs(touchx*CMperS - viold) < 2CMperS
+	do	IVmark(viold)  $$ clear old mark
+	loop
+		do	IVmark(touchx*CMperS)  $$ draw new mark
+		pause	keys = touch(left: move, up)
+		do	IVmark(touchx*CMperS)  $$ clear old mark
+		calc	touchx := (ztouchx -TrckOX - WdTrck/2)*(2*rVIMAX/WdTrck)
+		if	touchx > rVIMAX
+			calc	touchx := rVIMAX
+		elseif	touchx < -rVIMAX
+			calc	touchx := -rVIMAX
+		endif
+		outloop	zkey = zk(left: up)
+	endloop
+	if	touchx > 0
+		calc	vi := 10CMperS*int((touchx+5)/10)
+	else
+		calc	vi := 10CMperS*int((touchx+5)/10-1)
+	endif
+	do	IVmark(vi)  $$ draw new mark
+else
+	pause	keys = touch(left: up)
+	calc	touchx := (ztouchx -TrckOX - WdTrck/2)*(2*rVIMAX/WdTrck)
+*	do	ShowTouch(touchx)
+	if	touchx > 0
+		calc	vi := 10CMperS*int((touchx+5)/10)
+	else
+		calc	vi := 10CMperS*int((touchx+5)/10-1)
+	endif
+	if	vi!=viold
+		do	IVmark(viold)  $$ clear old mark
+		do	IVmark(vi)  $$ draw new mark
+	endif
+endif
+calc	StuData(8) := viold := vi
+*
+
+**********
+unit	IVmark(pos)
+	merge,global:
+	f: pos
+gat	pos/CMperS, 0
+plot	zk(-)
+*
+
+**********
+unit	Flash(region, Times)
+	merge,global:
+	i: region, LBox, TBox, RBox, BBox
+	Times  $$ value of WalkCount
+mode	xor
+case	region
+POS
+	pause	1
+	do	BlinkBox(1)  $$ position title
+	outunit
+VEL
+	pause	1
+	do	BlinkBox(2)  $$ velocity title
+	outunit
+ACC
+	pause	1
+	do	BlinkBox(3)  $$ acceleration title
+	outunit
+IP
+	do	IPosPort
+	pause	1
+IV
+	do	IVelPort
+	pause	1
+TRK
+	do	TrckPort
+	pause	1
+	do	BlinkJunction
+	outunit
+ROLL
+	do	TrckPort
+	pause	1
+	box	LBall, TBall; RBall, BBall  $$ clear box
+	if	Times = 0
+		do	BlinkBox(4)  $$ 4: Roll button; left-click
+	elseif	Times = 1
+		do	BlinkBox(5)  $$ 5: Roll button; right-click (shift-click on Mac)
+	endif
+	box	LBall, TBall; RBall, BBall  $$ redraw box
+	outunit
+endcase
+if	(Screen = MacSE)|(Screen = EGA)
+	calc	LBox := X1+WdLabel - 1
+		TBox := Y1
+		RBox := X2 + 3
+		BBox := Y2 + 2
+else
+	calc	LBox := X1+WdLabel + 1
+		TBox := Y1+1
+		RBox := X2
+		BBox := Y2
+endif
+* This blinks the scales of initial position and initial velocity
+loop	
+	box	LBox, TBox; RBox, BBox; 2
+*	clrkey
+	pause	0.4, keys=touch
+	if	zkey = zk(left: down)
+		box	LBox, TBox; RBox, BBox; 2
+		press	zk(left: down), ztouchx, ztouchy
+		outloop
+	endif
+	box	LBox, TBox; RBox, BBox; 2
+*	clrkey
+	pause	0.1, keys=touch
+	if	zkey = zk(left: down)
+		press	zk(left: down), ztouchx, ztouchy
+		outloop
+	endif
+endloop
+
+**********
+unit	BlinkJunction
+	merge,global:
+	i: XJ = 10 CM, YJ = 1 CM
+	Xthick = 1 CM, Ythick = 0.2 CM
+loop	
+*	gbox	-XJ, StuData(1)-YJ; XJ, StuData(1)+YJ
+	mode	write
+	gfill	-XJ, StuData(1)-YJ; XJ, StuData(1)-YJ+Ythick  $$ bottom
+	gfill	-XJ+Xthick, StuData(1)-YJ+Ythick; -XJ, StuData(1)+YJ-Ythick  $$ left
+	gfill	-XJ, StuData(1)+YJ; XJ, StuData(1)+YJ-Ythick  $$ top
+	gfill	XJ-Xthick, StuData(1)-YJ+Ythick; XJ, StuData(1)+YJ-Ythick  $$ right
+*	clrkey
+	pause	0.4, keys=touch(left: down; right: down)
+	if	((zkey = zk(left:down))|(zkey = zk(right:down)))&(-XJ < zgtouchx < XJ)&(StuData(1)-YJ < zgtouchy < StuData(1)+YJ)
+*		gbox	-XJ, StuData(1)-YJ; XJ, StuData(1)+YJ
+		mode	erase
+		gfill	-XJ, StuData(1)-YJ; XJ, StuData(1)-YJ+Ythick  $$ bottom
+		gfill	-XJ+Xthick, StuData(1)-YJ+Ythick; -XJ, StuData(1)+YJ-Ythick  $$ left
+		gfill	-XJ, StuData(1)+YJ; XJ, StuData(1)+YJ-Ythick  $$ top
+		gfill	XJ-Xthick, StuData(1)-YJ+Ythick; XJ, StuData(1)+YJ-Ythick  $$ right
+		if	zkey = zk(left: down)
+			press	zk(left: down), ztouchx, ztouchy
+		elseif	zkey = zk(right: down)
+			press	zk(right: down), ztouchx, ztouchy
+		endif
+		outloop
+	endif
+*	gbox	-XJ, StuData(1)-YJ; XJ, StuData(1)+YJ
+	mode	erase
+	gfill	-XJ, StuData(1)-YJ; XJ, StuData(1)-YJ+Ythick  $$ bottom
+	gfill	-XJ+Xthick, StuData(1)-YJ+Ythick; -XJ, StuData(1)+YJ-Ythick  $$ left
+	gfill	-XJ, StuData(1)+YJ; XJ, StuData(1)+YJ-Ythick  $$ top
+	gfill	XJ-Xthick, StuData(1)-YJ+Ythick; XJ, StuData(1)+YJ-Ythick  $$ right
+*	clrkey
+	pause	0.1, keys=touch(left: down; right: down)
+	if	((zkey = zk(left:down))|(zkey = zk(right:down)))&(-XJ < zgtouchx < XJ)&(StuData(1)-YJ < zgtouchy < StuData(1)+YJ)
+		if	zkey = zk(left: down)
+			press	zk(left: down), ztouchx, ztouchy
+		elseif	zkey = zk(right: down)
+			press	zk(right: down), ztouchx, ztouchy
+		endif
+		outloop
+	endif
+endloop
+mode	xor
+
+**********
+unit	BlinkBox(n)
+	merge,global:
+	i: n  $$ 1: position title; 2: velocity title; 3: acceleration title; 4: Roll button; 
+*	5: Roll botton with right-click (shift-click on Mac)
+	L, T, R, B  $$ left, top, right, bottom corners of indicated region
+if	4 <= n <= 5  $$ Roll box
+	calc	L := LBall
+		T := TBall
+		R := RBall
+		B := BBall
+elseif	1 <= n <= 3  $$ Graph title
+	calc	T := TType+Gap
+		B := TType+HtButton
+endif
+case	n
+1
+	calc	L := Lpos
+		R := Rpos-Gap
+2
+	calc	L := Lvel
+		R := Rvel-Gap
+3
+	calc	L := Lacc
+		R := Racc-Gap
+endcase
+if	1 <= n <= 4  $$ left-click on graph titles or Roll box
+	loop	
+		box	L, T; R, B; -2
+*		clrkey
+		pause	0.4, keys=touch(left: down)
+		if	(zkey = zk(left: down))&(L < ztouchx < R)&(T < ztouchy < B)
+			box	L, T; R, B; -2
+			press	zk(left: down), ztouchx, ztouchy
+			outloop
+		endif
+		box	L, T; R, B; -2
+*		clrkey
+		pause	0.1, keys=touch(left: down)
+		if	(zkey = zk(left: down))&(L < ztouchx < R)&(T < ztouchy < B)
+			press	zk(left: down), ztouchx, ztouchy
+			outloop
+		endif
+	endloop
+elseif	n = 5  $$ right-click on Roll box
+	loop	
+		box	L, T; R, B; -2
+*		clrkey
+		pause	0.4, keys=touch(right: down)
+		if	(zkey = zk(right: down))&(L < ztouchx < R)&(T < ztouchy < B)
+			box	L, T; R, B; -2
+			press	zk(right: down), ztouchx, ztouchy
+			outloop
+		endif
+		box	L, T; R, B; -2
+*		clrkey
+		pause	0.1, keys=touch(right: down)
+		if	(zkey = zk(right: down))&(L < ztouchx < R)&(T < ztouchy < B)
+			press	zk(right: down), ztouchx, ztouchy
+			outloop
+		endif
+	endloop
+endif
+
+**********
+*unit	ShowTouch(where)
+*	merge,global:
+*	f: where
+*mode	write
+*erase	479,290;569,408
+*at	479,290;569,408
+*write	touchx = <|s, where|>
+*	xi = <|s, xi|>
+*	xiold = <|s, xiold|>
+*	vi = <|s, vi|>
+*	viold = <|s, viold|>
+*mode	xor
+
+**********
+unit	HandleTk
+	merge,global:
+	f: epsx = 45  $$ x tolerance for post height adjustment
+	epsy = 4       $$ y tolerance for post height adjustment
+	touchx  $$ 0 <~ touchx <~ 500
+	touchy  $$ 0 <~ touchy <~ 10
+	oldy, oldlefty, oldrighty  $$ for rubberbanding ramps
+	leftdy  $$ vertical offset of left endpoint of ramp relative to touched point ( < 0 for +slope)
+	rightdy  $$ vertical offset of right endpoint of ramp relative to touched point ( > 0 for +slope)
+	origy  $$ for computing dnblocks
+	i: i  $$ generic loop counter
+	nearpost  $$ post nearest to mouse click
+	leftpost, rightpost  $$ posts immediately to the left and right of mouse click
+	nblocks  $$ number of blocks for post nearest mouse click
+	dnblocks  $$ change in number of blocks for posts to left and right of mouse click
+	highest, lowest  $$ highest and lowest posts in current arrangement
+	dy  $$ delta y (in CM) for dragging entire ramp up or down
+calc	touchx := (ztouchx - TrckOX)*(rXMAX/WdTrck)
+	touchy := -(ztouchy -TrckOY)*(rYMAX/HtTrck)
+	dy := 0
+calc	nearpost := int((touchx+rLEN/2)/rLEN)+1
+if	touchx - (nearpost-1)*rLEN >= 0  $$ mouse click at or to the right of nearpost
+	calc	leftpost := nearpost
+		rightpost := nearpost + 1
+else	$$  mouse click to the left of nearpost
+	calc	leftpost := nearpost - 1
+		rightpost := nearpost
+endif
+if	leftpost < 1  
+	calc	leftpost := 1  $$ ensure that left and right posts do not get non-sensical values
+endif
+if	rightpost > NPOSTS
+	calc	rightpost := NPOSTS
+endif
+
+calc	highest := 0
+	lowest := 10 CM
+loop	i := 1, NPOSTS
+	if	StuData(i) > highest
+		calc	highest := StuData(i)
+	endif
+	if	StuData(i) < lowest
+		calc	lowest := StuData(i)
+	endif
+endloop
+if	(abs(touchx-rLEN*(nearpost-1)) < epsx) &  (abs(touchy-int(StuData(nearpost)/CM)) <= epsy) 
+	color	zred 
+*	$$ mouse click near a ramp junction
+	if	zkey = zk(right: down)  $$ drag entire arrangement up or down
+		calc	origy := zgtouchy
+		loop	
+			pause	keys = touch(right: move, up)
+			loop	i := 1, NRAMPS
+				gdraw	LEN*(i-1), StuData(i)+dy; LEN*(i), StuData(i+1)+dy  $$ remove top edge of track
+				gdot	LEN*(i), StuData(i+1)+dy
+			endloop
+			calc	dy := round((zgtouchy-origy)/CM)*CM
+			if	dy > (10 CM - highest)
+				calc	dy := 10 CM - highest
+			elseif	dy < -lowest
+				calc	dy := -lowest
+			endif
+			loop	i := 1, NRAMPS
+				gdraw	LEN*(i-1), StuData(i)+dy; LEN*(i), StuData(i+1)+dy  $$ draw new top edge
+				gdot	LEN*(i), StuData(i+1)+dy
+			endloop
+		outloop	zkey = zk(right: up)
+		endloop
+		loop	i := 1, NPOSTS
+			calc	StuData(i) := StuData(i) + dy
+		endloop
+	elseif	zkey = zk(left: down)  $$ drag only selected junction up or down
+		calc	oldy := StuData(nearpost)
+		calc	leftdy := (StuData(leftpost) - zgtouchy)
+			rightdy := (StuData(rightpost) - zgtouchy)
+		calc	oldlefty := StuData(leftpost)
+			oldrighty := StuData(rightpost)
+		calc	origy := zgtouchy
+		calc	nblocks := int((touchy+rYMAX/2)/rYMAX)+1
+		loop	
+			pause	keys = touch(left: move, up)
+			if	-0.5 CM < zgtouchy < YMAX + 0.5 CM
+				if	nearpost=1  $$ Ramp to right of left-most post
+					gdraw	0, oldy; LEN, StuData(2)
+					gdraw	0, round(zgtouchy/CM)*CM; LEN, StuData(2)
+				elseif	nearpost=NPOSTS  $$ Ramp to left of right-most post
+					gdraw	LEN*(NPOSTS-2), StuData(NPOSTS-1); LEN*(NPOSTS-1), oldy
+					gdraw	LEN*(NPOSTS-2), StuData(NPOSTS-1); LEN*(NPOSTS-1), round(zgtouchy/CM)*CM
+				else $$ Ramp to left of post, then ramp to right
+					gdraw	LEN*(nearpost-2), StuData(nearpost-1); LEN*(nearpost-1), oldy; LEN*(nearpost), StuData(nearpost+1)
+					gdraw	LEN*(nearpost-2), StuData(nearpost-1); LEN*(nearpost-1), round(zgtouchy/CM)*CM; LEN*(nearpost), StuData(nearpost+1)
+				endif
+				calc	oldy := round(zgtouchy/CM)*CM
+				calc	nblocks := round(zgtouchy/CM)
+			endif
+		outloop	zkey = zk(left: up)
+		endloop
+		calc	StuData(nearpost) := nblocks*CM
+	endif
+	color	zdefaultf
+	do	PtErase  $$ clear old tracks and posts
+	do	DrawTrck
+	do	PlaceBall(StuData(7))
+
+endif
+do	ComputeSlopes(STUDENT)
+*do	ShowPost(touchx, touchy, nearpost, leftpost, rightpost)
+*do	ShowStuData(leftpost, rightpost)	
+*
+
+*************
+*unit	ShowPost(tx, ty, near, left, right)
+*	merge,global:
+*	f: tx, ty, near, left, right
+*mode	write
+*erase	479,290;800,408
+*at	479,290;800,408
+*write	touchx = <|s, tx|>, touchy = <|s, ty|>
+*	near:<|s, near|> left:<|s,left|> right:<|s,right|>
+*mode	xor
+*
+***********
+*unit	ShowStuData(lpost, rpost)
+*	merge,global:
+*	i: lpost, rpost
+*clip
+*mode	write
+*do	MessPort
+*do	PtErase
+*write	StuData(<|s, lpost|>) = <|s, StuData(lpost)/CM|>
+*	StuData(<|s, rpost|>) = <|s, StuData(rpost)/CM|>
+*mode	xor
+*
+**********
+*unit	ShowErrors
+*	merge,global:
+*	i: serial
+*clip
+*mode	write
+*do	MessPort
+*do	PtErase
+*write	Errors: 
+*if	Errors(1)
+*	write	x0 
+*endif
+*if	Errors(2)
+*	write	v0 
+*endif
+*loop	serial := 1, NRAMPS
+*	if	Errors(2+serial) = TRUE
+*		show	GivRampsUsed(serial)
+*	endif
+*endloop
+*write	<|cr|>ErrorNum=<|s,ErrorNum|>
+*	GivGraphVisible=<|s,GivGraphVisible|>
+*	CorrectGraphVisible=<|s,CorrectGraphVisible|>
+*mode	xor
+
+**********
+unit	UpdateHelpDisplay
+	merge,global:
+	i: index, Next
+if	FirstHelp
+	do	FindNextError(1; Next)
+else
+	do	FindNextError(CurrentError+1; Next)
+endif
+calc	LastError := CurrentError
+	CurrentError := Next
+mode	write
+do	HelpPort
+erase	X1, Y1; Xfine, Yfine  $$ to erase ramp label that occasionally extends beyond right margin.
+*do	PtErase
+if	Help
+	do	GiveHelp
+	if	(ErrorNum > 1) & StuGraphVisible & ContHelp
+		at	RTrck + 20, Bmar - HtLabel; Rmar, Bmar
+		write	Click here for more.  
+	endif
+endif
+mode	xor
+do	UpdateErrorDisplay
+
+**********
+unit	Kudos
+*do	AppendToLogFile("Success !")  $$ LOG $$
+mode	write
+do	HelpPort
+do	PtErase
+if	Screen = MacSE
+	text
+@1ff   1@1pl8000Congratulations!@1ff8000
+
+You reproduced the 
+graph 
+\
+	write	\Ntries\\\(first try).\(<|s,Ntries|> tries).
+@1pl4006	text
+@1pl8000<|cr|><|cr|>You may select another example from the @1ff   1Examples@1ff8000 menu, or quit using the @1ff   1Options@1ff8000 menu.
+@1pl4006\
+elseif	Screen = EGA
+	text
+@1ff   1@1pl8000Congratulations!@1ff8000
+You reproduced the 
+graph 
+\
+	write	\Ntries\\\(first try).\(<|s,Ntries|> tries).
+@1pl4006	write	  You may select another example from the @1ff   1Examples@1ff8000 menu, or quit using the @1ff   1Options@1ff8000 menu.
+else
+	text
+@1ff   1@1pl4002Congratulations!@1ff8000
+
+You reproduced the graphs<|cr|>
+@1pl8000\
+@1pl4006	write	\Ntries\\(without rolling the ball).\(rolling the ball only once).\(rolling the ball twice).\(rolling the ball <|s,Ntries|> times).
+	text
+@1pl8000<|cr|><|cr|>You may select another example from the @1ff   1Examples@1ff8000 menu, or quit using the @1ff   1Options@1ff8000 menu.
+@1pl4006\
+endif
+mode	xor
+
+**********
+unit	GiveHint
+if	(current < 3)  $$ give these hints only during the first two examples
+	mode	write
+	if	(Ntries > 7)&(mod(Ntries,5) = 3)  $$ give this suggestion only once after every five rolls
+		if	(MsgVisible ~= UseShiftClickMSG)&(~Help)
+			do	MessPort
+			do	PtErase
+			if	Mouse = ONEbutton
+				text
+@1pl8000Remember, you may view the motion a little at a time by holding down the @1ff   2shift@1ff8000  key while you click on @1ff   1Roll@1ff8000.
+@1pl4006\
+			else  $$ Mouse = TWObutton
+				text
+@1pl8000Remember, you may view the motion a little at a time by clicking on @1ff   1Roll @1ff8000with the @1ff   2right@1ff8000 button.   
+@1pl4006\
+			endif
+			calc	MsgVisible := UseShiftClickMSG
+		endif
+	elseif	(Ntries > 9)&(mod(Ntries,5) = 0)  $$ give this suggestion only once after every five rolls
+		if	(MsgVisible ~= UseHelpMSG)&(~Help)
+			do	MessPort
+			do	PtErase
+			text
+@1pl8000For suggestions, you may use the @1ff   1Help@1ff8000 menu.  
+@1pl4006\
+			calc	MsgVisible := UseHelpMSG
+		endif
+	elseif	(NcurvesVisible > 3)  $$ large number of student curves on graph
+		if	MsgVisible ~= ClrGrphMSG
+			do	MessPort
+			do	PtErase
+			text
+@1pl8000To clear your graphs, click on them anywhere.  
+@1pl4006\
+			calc	MsgVisible := ClrGrphMSG
+		endif
+	elseif	(NtriesSincevtat > 5)  $$ suggest if more than 5 rolls since last v-t or a-t graph
+		if	MsgVisible ~= UsevtatMSG
+			do	MessPort
+			do	PtErase
+			text
+@1pl8000You have been using graphs of @1ff   1position@1ff8000 vs. time.  The @1ff   1velocity@1ff8000 or @1ff   1acceleration@1ff8000 graphs may also be useful.  To use them, click on the graph title, then click on @1ff   1Roll@1ff8000.
+@1pl4006\
+			calc	MsgVisible := UsevtatMSG
+		endif
+	else
+		do	Instructions
+	endif
+	mode	xor
+endif
+
+**********
+unit	FindNextError(index; Next)
+	merge,global:
+	i: index, Next, j, start
+calc	start := index
+	j := 0
+	Next := 0  $$ indicates no error found
+loop	start + j <= 2+NRAMPS  $$ find the next error, starting with Errors(index)
+	if	Errors(start + j)  $$ start with the current index
+		calc	Next := start + j
+		outloop
+	else
+		calc	j := j + 1
+	endif
+endloop
+if	Next = 0  $$ no error found for index <= indices <= 2+NRAMPS
+	calc	start := 1
+		j := 0
+	loop	start + j < index  $$ find the next error, starting with Errors(1)
+		if	Errors(start + j)  $$ start with the current index
+			calc	Next := start + j
+			outloop
+		else
+			calc	j := j + 1
+		endif
+	endloop
+endif
+
+@1pl8000**********
+unit	GiveHelp
+if	StuGraphVisible
+	if	ErrorNum = 0  $$ no errors
+		if	not(CorrectGraphVisible)
+			text
+Your arrangement is correct.  
+\
+
+		endif
+	else	$$ at least one error
+		if	CurrentError = 1
+			if	gtype = POS
+				text
+Check your initial position.  Read the value from the vertical (x) axis of the graph at t=0.  
+\
+
+			else
+				text
+Use the position graph to find the position at t=0.  
+\
+
+			endif
+		elseif	CurrentError = 2
+			if	gtype = VEL
+				text
+Check the initial velocity.  Read the correct value from the vertical (v) axis of the graph at t=0.  
+\
+
+			else
+				text
+Use the velocity graph to find the velocity at t=0.  Click on @1ff   1velocity@1ff8000 above the graph.  
+\
+
+			endif
+		else	$$ 3 <= CurrentError <= 7
+			do	InclineErrorMsg
+		endif
+		if	Screen != MacSE
+			write	
+				
+				
+		endif
+	endif
+else
+	text
+Click on the @1ff   1Roll@1ff8000 button to see a graph of the ball's motion.
+\
+
+endif
+
+**********
+unit	InclineErrorMsg
+	merge,global:
+	i: i
+randu	i, 3
+case	i
+1
+	text
+Check the acceleration of the ball on ramp 
+\
+	write	\GivRampsUsed(CurrentError-2)\\\A\B\C\D\E
+	text	
+, and adjust the incline there.
+\
+2
+	text
+Adjust the incline of ramp 
+\
+	write	\GivRampsUsed(CurrentError-2)\\\A\B\C\D\E
+	text	
+ so that the ball has the correct value of acceleration here.
+\  
+3
+	text
+Make sure that the ball has the correct acceleration on ramp 
+\
+	write	\GivRampsUsed(CurrentError-2)\\\A\B\C\D\E
+	write	.  
+endcase
+*write	
+*	CurrErr=<|s,CurrentError|>, LastErr=<|s,LastError|>
+*	ErrorNum=<|s,ErrorNum|>
+@1pl4006
+**********
+unit	DisplayButtons
+	merge,global:
+	i: SHIFT
+if	Screen = WRKSTN
+*	calc	SHIFT := HtButton $divr$ 3
+else
+	calc	SHIFT := (HtButton $divr$ 5)+Fonty
+endif
+*do	SetButtonFont
+mode	write
+text	Lpos, TType + SHIFT; Rpos, BType
+@1ff   1@1pl4002position@1ff8000
+@1pl4006\
+
+text	Lvel, TType + SHIFT; Rvel, BType
+@1ff   1@1pl4002velocity@1ff8000
+@1pl4006\
+
+text	Lacc, TType + SHIFT; Racc, BType
+@1ff   1@1pl4002acceleration@1ff8000
+@1pl4006\
+
+*do	SetBodyFont
+mode	xor
+
+**********
+unit	UpdateRollButton(Label)
+	merge,global:
+	i: Label
+mode	write
+erase	LBall, TBall; RBall, BBall
+box	LBall, TBall; RBall, BBall
+if	Screen = WRKSTN
+*	at	LBall, TBall+0.3*HtButton; RBall, BBall
+else
+	at	LBall, TBall+(0.2*HtButton)+Fonty; RBall, BBall
+endif
+case	Label
+toSTOP
+	text
+@1ff   1@1pl4002Stop@1ff8000
+@1pl4006\
+
+toROLL
+	text
+@1ff   1@1pl4002Roll@1ff8000
+@1pl4006\
+
+endcase
+mode	xor
+
+**********
+unit	InitWTMenus
+*	initialize menus for walk-through section
+menu	Title page,10: JumpToTitlePage
+if	WalkThrough
+	menu	Instructions
+	menu	Skip instructions,11: ToggleInstructions
+else
+	menu	Skip instructions
+	menu	Instructions,11: ToggleInstructions
+endif
+
+**********
+unit	InitMenus
+menu	Title page,10: JumpToTitlePage
+do	InstructionsMenus
+do	ExplorationMenus
+menu	Graph,20;Roll ball,10: SelectRollBall
+menu	Graph,20;Clear graph,11: ClearGraph
+menu	Graph,20;Dashed curve,12: ToggleDashed
+do	ExamplesMenus
+do	HelpMenus
+
+**********
+unit	HelpMenus
+if	GivGraphVisible
+	if	Help
+		menu	Help;Give help once
+		menu	Help;Leave help on
+		menu	Help,40;Hide help,10: SwitchHelp(0)
+	else
+		menu	Help;Hide help
+		menu	Help,40;Give help once,10: SwitchHelp(1)
+		menu	Help,40;Leave help on,11: SwitchHelp(2)
+	endif
+endif
+
+**********
+unit	ExamplesMenus
+if	GivGraphVisible
+	menu	Examples,30;Next example,10: NextExample
+	menu	Examples,30;Previous example,11: PreviousExample
+	menu	Examples,30;Pick an example,12: PickExample
+endif
+if	current <= NGIVEN + NREC
+	menu	Examples,30;Save current experiment,20: SaveExample
+else
+	menu	Examples;Save current experiment
+endif
+if	CurrStored > NumRemote
+	menu	Examples,30;Delete saved experiments,21: DeleteExamples
+else
+	menu	Examples;Delete saved experiments
+endif
+
+**********
+unit	DashedMenus
+if	Dashed
+	menu	Graph;Dashed curve
+	menu	Graph,20;Smooth curve,12: ToggleDashed
+else
+	menu	Graph;Smooth curve
+	menu	Graph,20;Dashed curve,12: ToggleDashed
+endif
+
+**********
+unit	InstructionsMenus
+if	WalkThrough
+	menu	Instructions
+	menu	Skip instructions,11: ToggleInstructions
+else
+	menu	Skip instructions
+	menu	Instructions,11: ToggleInstructions
+endif
+
+**********
+unit	ExplorationMenus
+if	GivGraphVisible
+	menu	Problem examples
+	menu	Free exploration,12: HideGivenGraph
+else
+	menu	Free exploration
+	menu	Problem examples,12: ShowGivenGraph
+endif
+
+**********
+unit	ClearMenus
+menu	Help
+menu	Examples
+menu	Graph
+menu	Free exploration
+menu	Instructions
+menu	Skip instructions
+menu	Title page
+
+**********
+unit	ToggleDashed
+calc	Dashed := ~Dashed
+do	DashedMenus
+do	RollBall(CONTINUE)
+
+**********
+unit	HideGivenGraph
+calc	Dashed := FALSE
+	GivGraphVisible := FALSE
+do	ExplorationMenus
+calc	Help := FALSE
+	ContHelp := FALSE
+menu	Examples
+menu	Help
+*do	AppendToLogFile("Starting free exploration.")  $$ LOG $$
+jump	Simulation
+
+**********
+unit	ShowGivenGraph
+calc	Dashed := FALSE
+	GivGraphVisible := TRUE
+do	ExplorationMenus
+jump	Simulation
+
+**********
+unit	ToggleInstructions
+calc	WalkThrough := ~WalkThrough
+	Dashed := FALSE
+	GivGraphVisible := TRUE
+do	InstructionsMenus
+if	WalkThrough
+	jump	WTSimulation
+else
+	jump	Simulation
+endif
+
+**********
+unit	SwitchHelp(helpstate)
+	merge,global:
+	i: helpstate
+case	helpstate
+0	$$ hide help
+	calc	Help := FALSE
+		ContHelp := FALSE
+*	do	AppendToLogFile("Selected Hide help.") $$ LOG $$
+1	$$ give help once
+	calc	Help := TRUE
+		ContHelp := FALSE
+		GivGraphVisible := TRUE  $$ Force visibility of Given graph when help requested
+*	do	AppendToLogFile("Selected Give help once.") $$ LOG $$
+2	$$ leave help on
+	calc	Help := TRUE
+		ContHelp := TRUE
+		GivGraphVisible := TRUE
+*	do	AppendToLogFile("Selected Leave help on.") $$ LOG $$
+endcase
+do	HelpMenus
+calc	FirstHelp := TRUE
+do	LabelRamps
+do	UpdateHelpDisplay
+do	Instructions
+
+**********
+unit	SwitchHelpOff
+if	Help
+	do	LabelRamps  $$ to clear
+endif
+calc	Help := FALSE
+	ContHelp := FALSE
+	FirstHelp := TRUE
+do	HelpMenus
+do	UpdateHelpDisplay
+
+**********
+unit	JumpToTitlePage
+jump	TitlePage
+
+**********
+unit	DrawTrck
+	merge,global:
+	i: index
+	nblocks, n, postx
+do	TrckPort
+mode	write
+*inhibit	update
+do	PtErase
+*do	PtFrame
+color	zred
+*color	12  $$IBM
+loop	index := 1, NRAMPS
+	gdraw	LEN*(index-1), StuData(index); LEN*(index), StuData(index+1)
+	gdraw	LEN*(index), StuData(index+1)-Thick; LEN*(index-1), StuData(index)-Thick
+endloop
+gdraw	0, StuData(1)-Thick; 0, StuData(1) $$ draw left end
+gdraw	(NPOSTS-1)*LEN, StuData(NPOSTS); (NPOSTS-1)*LEN, StuData(NPOSTS)-Thick $$ right end
+loop	index := 1, NPOSTS
+	calc	postx := (index - 1)*LEN
+	calc	nblocks := (StuData(index))$divr$CM
+	loop	n := 1, nblocks
+		gat	postx, -Thick + (n-1)*CM
+		plot	zk(b)  $$ block icon
+	endloop
+	gat	postx, -Thick + nblocks*CM
+	plot	zk(c)  $$ cap icon
+endloop
+*allow	update
+color	zdefaultf
+if	~WalkThrough
+	do	LabelPosts
+endif
+mode	xor
+
+**********
+unit	LabelPosts
+	merge,global:
+	i: post
+do	SetNumbersFont
+loop	post := 1, NPOSTS
+	gerase	(post-1)*LEN - 5CM, PostLabelgy; (post-1)*LEN + 20CM, PostLabelgy - PostLabelgDy
+	gat	(post-1)*LEN - 5CM, PostLabelgy
+	show	(StuData(post))$divr$CM
+endloop
+do	SetBodyFont
+
+**********
+unit	LabelRamps
+	merge,global:
+	i: rmp
+*icons	zsans + "10"
+do	TrckPort
+mode	xor
+loop	rmp := 1, NRAMPS
+	gat	(rmp-1)*LEN + LEN/2, RampLabelgy
+	show	zchar(zk(A) + rmp - 1)
+endloop
+*do	RestoreIcons
+
+**********
+unit	UpdateErrorDisplay
+*if	StuGraphVisible  $$ only highlight errors after ball has rolled
+do	ClearLastError
+case	CurrentError
+1
+	do	UpdateIPos
+2
+	do	UpdateIVel
+3,4,5,6,7
+	do	UpdateTrckError
+endcase
+*endif
+
+**********
+unit	FindErrors
+	merge,global:
+	i: serial
+*	This routine sets values in the Boolean array Errors to TRUE or FALSE according to 
+*	whether the initial position, initial velocity and slopes of 1st, 2nd, 3rd ramps
+*	(in the order on which they were traveled) are correct
+zero	Errors  $$ set all values to FALSE
+calc	ErrorNum := 0
+if	StuData(7) != GivData(7)  $$ initial position
+	calc	Errors(1) := TRUE
+		ErrorNum := ErrorNum + 1
+endif
+if	StuData(8) != GivData(8)  $$ initial velocity
+	calc	Errors(2) := TRUE
+		ErrorNum := ErrorNum + 1
+endif
+loop	serial := 1, NRAMPS
+	if	GivRampsUsed(serial) > 0  $$ only report an error if the ball rolls on the given ramp
+		if	StuSlopes(GivRampsUsed(serial)) != GivSlopes(GivRampsUsed(serial))
+			calc	Errors(2+serial) := TRUE
+				ErrorNum := ErrorNum + 1
+		endif
+	else  $$ if ball does not reach GivRampsUsed(serial), outloop
+		outloop
+	endif
+endloop
+*do	ShowErrors
+
+**********
+unit	ClearLastError
+	merge,global:
+	i: index
+mode	xor
+case	LastError
+1
+	if	IPshaded
+		fill	Lmar, TIP; Lmar+WdLabel, TIP+HtLabel  $$ clear label
+		calc	IPshaded := FALSE
+	endif
+2
+	if	IVshaded
+		fill	Lmar, TIV; Lmar+WdLabel, TIV+HtLabel  $$ clear label
+		calc	IVshaded := FALSE
+	endif
+3,4,5,6,7
+	do	TrckPort
+	mode	write
+	loop	index := 1, NRAMPS $$ clear all ramp shading
+		gerase	(index-1)*LEN +BlockWd, THilight; index*LEN-BlockWd, BHilight-1  $$ need this -1 to compensate for cT clearing bug
+	endloop
+	mode	xor
+endcase
+
+**********
+unit	UpdateIPos
+mode	write
+if	Help
+	if	Errors(1)
+		do	WriteIPos
+		mode	xor
+		fill	Lmar, TIP; Lmar+WdLabel, TIP+HtLabel $$ inverse video
+		calc	IPshaded := TRUE
+	else
+		do	WriteIPos
+	endif
+else
+	do	WriteIPos
+endif
+mode	xor
+
+**********
+unit	UpdateIVel
+mode	write
+if	Help
+	if	Errors(2)
+		do	WriteIVel
+		mode	xor
+		fill	Lmar, TIV; Lmar+WdLabel, TIV+HtLabel $$ inverse video
+		calc	IVshaded := TRUE
+	else
+		do	WriteIVel
+	endif
+else
+	do	WriteIVel
+endif
+mode	xor
+
+**********
+unit	UpdateTrckError
+do	TrckPort
+mode	write
+if	Help
+	if	Errors(CurrentError)
+		gfill	(GivRampsUsed(CurrentError-2)-1)*LEN +BlockWd, THilight; GivRampsUsed(CurrentError-2)*LEN-BlockWd, BHilight
+	endif
+endif
+mode	xor
+
+**********
+unit	DrawIPos
+do	IPosPort
+mode	write
+do	PtErase
+*do	PtFrame
+do	WriteIPos
+color	zblue
+gdraw	0,0; rXMAX, 0
+do	SetNumbersFont
+labelx	100, 50
+color	zdefaultf
+do	SetBodyFont
+mode	xor
+do	IPmark(StuData(7))
+*
+
+**********
+unit	DrawIVel
+do	IVelPort
+mode	write
+do	PtErase
+*do	PtFrame
+do	WriteIVel
+color	zmagenta
+gdraw	-rVIMAX, 0; rVIMAX, 0
+do	SetNumbersFont
+labelx	10
+color	zdefaultf
+do	SetBodyFont
+mode	xor
+do	IVmark(StuData(8))
+*
+
+**********
+unit	WriteIPos
+*at	Lmar+3, TIP+2; Lmar+3+WdLabel, TIP+HtLabel
+at	Lmar+1, TIP+4+Fonty; Lmar+1+WdLabel, TIP+HtLabel
+write	@1ff   1Initial position@1ff8000
+
+**********
+unit	WriteIVel
+*at	Lmar+3, TIV+2; Lmar+3+WdLabel, TIV+HtLabel
+at	Lmar+1, TIV+4+Fonty; Lmar+1+WdLabel, TIV+HtLabel
+write	@1ff   1Initial velocity@1ff8000
+
+**********
+unit	PlaceBall(x)  $$ when adjusting tracks, selecting initial x
+	merge,global:
+	i: x, y  $$ x and y have units of CM
+	rise, rmp
+calc	rmp := (x $divt$ LEN) + 1
+if	x >= XMAX
+	calc	x := XMAX
+		y := StuData(rmp)
+elseif	x <= 0
+	calc	x := 0
+		y := StuData(rmp)
+else
+	calc	rise := StuData(rmp+1) - StuData(rmp)
+		y := StuData(rmp) + (rise$divr$rLEN)*((x$divr$CM)-(rmp-1)*rLEN)
+endif
+*  Following code should be identical to that in Plot routine
+calc	X := TrckOX + ((x$divr$CM)*WdTrck)$divr$rXMAX
+	Y := TrckOY - (y*HtTrck)$divr$YMAX
+at	X, Y-WksFudge
+plot	zk(o)
+calc	Xold := X
+	Yold := Y
+
+**********
+unit	DropBall(v; x)
+	merge,global:
+	i: v, x
+	Xshift  $$ ball falls beyond post
+	Count
+calc	Yold := Y := TrckOY + 8
+	Count := 1
+if	v >= 0
+	calc	Xshift := 12
+else
+	calc	Xshift := -10
+endif
+loop
+	outloop	(zkey = zk(left: down))|(Count > 20)|(x < -50 CM)|(x > XMAX + 50 CM)	
+	*  Following code should be identical to that in Plot routine
+	calc	X := TrckOX + ((x$divr$CM)*WdTrck)$divr$rXMAX+Xshift
+		Count := Count + 1
+	at	X, Y
+	plot	zk(o)  $$ draw ball
+	calc	x := x + v*DT
+	pause	0.1, keys=touch
+	plot	zk(o) $$ erase ball
+endloop
+at	X, Y
+plot	zk(o)
+pause	1
+at	X, Y
+plot	zk(o)
+calc	Xold := X
+
+**********
+*unit	ShowCoords(Xold, Yold, X, Y)
+*	i: Xold, Yold, X, Y
+*mode	write
+*erase	470,238;631,345
+*at	470,238;631,345
+*write	Xold = <|s, Xold|>, X = <|s, X|>
+*	Yold = <|s, Yold|>, Y = <|s, Y|>
+*mode	xor
+*pause	0.3
+
+***********
+*unit	ShowValues(which, msg, r, tr, xval, xjcn, vval, vjcn, aval, tval)
+*	merge,global:
+*	i: which
+*	m: msg
+*	i: r, tr, xval, xjcn, vval, vjcn, aval, tval
+*if	which = STUDENT
+*	clip
+*	mode	write
+*	do	MessPort
+*	do	PtErase
+*	write	<|s, msg|>
+*		ramp	<|s, r|>
+*		trialramp	<|s, tr|>
+*		x	<|t, xval/CM, 4,2|>
+*		xJcn	<|t, xjcn/CM, 4,2|>
+*		v	<|t, vval/CMperS, 4,2|>
+*		vJcn	<|t, vjcn/CMperS, 4,2|>
+*		a	<|t, aval/CMperS2, 4,2|>
+*		t	<|t, tval/S, 4,1|>
+*	pause
+*	mode	xor
+*endif
+*
+***********
+*unit	Trace2(which, var1, val1, var2, val2)
+*	merge,global:
+*	i: which
+*	val1, val2
+*	m: var1, var2
+*if	which = STUDENT
+*	clip
+*	mode	write
+*	do	MessPort
+*	do	PtErase
+*	write	<|s, var1|> = <|s, val1|>
+*		<|s, var2|> = <|s, val2|>
+*	pause
+*	mode	xor
+*endif
+
+***********
+*unit	ReportStopped(stop)
+*	merge,global:
+*	i: stop
+*clip
+*mode	write
+*do	MessPort
+*do	PtErase
+*if	stop = TRUE
+*	write	Stopped
+*else
+*	write	Not stopped
+*endif
+*pause
+*mode	xor
+
+**********
+*unit	ShowRampsUsed(whichdata; RampsUsed)
+*	merge,global:
+*	i: index
+*	whichdata
+*	RampsUsed(*)
+*clip
+*mode	write
+*do	MessPort
+*do	PtErase
+*if	whichdata = GIVEN
+*	write	Given:	
+*elseif	whichdata = STUDENT
+*	write	Student:	
+*else
+*	write	unknown data
+*endif
+*loop	index := 1, NRAMPS
+*	if	RampsUsed(index) > 0
+*		show	RampsUsed(index)
+*	endif
+*endloop
+*pause	1
+*mode	xor
+
+**********
+unit	ComputeSlopes(which)
+	merge,global:
+	i: which, index
+if	which = GIVEN
+	loop	index := 1, NRAMPS
+		calc	GivSlopes(index) := GivData(index+1) - GivData(index)
+	endloop
+elseif	which = STUDENT
+	loop	index := 1, NRAMPS
+		calc	StuSlopes(index) := StuData(index+1) - StuData(index)
+	endloop
+endif
+
+***********
+unit	Plot(whichdata, type)
+	merge,global:
+	i: whichdata  $$ GIVEN or STUDENT
+	Data(RECSIZE)  $$ filled with either GivData or StuData
+	RampsUsed(NRAMPS)  $$  used to assign GivRampsUsed and StuRampsUsed
+	serial  $$ index of ramps used in serial time order
+*	e.g., RampsUsed = (3,4,5,2,1) means ball starts on 3, rolls to 5, then returns to 1
+	Accel(NRAMPS)  $$ accelerations on all ramps
+	type  $$ POS, VEL or ACC graph
+	ordinate, yold, rise
+	x, y, v, a, t
+	aold  $$ previous value of a, used to keep track of bends in the track
+	lastt, lastord
+	xJcn  $$ position of junction (multiple of LEN)
+	vJcn  $$ velocity at junction (including sign, in CMperS)
+	sJcn(NPOSTS)  $$ array of junction speeds (computed in ComputeJcnSpeeds)
+	ramp  $$ current ramp; has values 1 .. NRAMPS
+	trialramp, xtrial
+	hi  $$ initial height of ball above y = 0 (in CM)
+	DoBall  $$ flag indicating whether ball should roll during plot
+	PauseFlag  $$ to flag whether ball should pause at next junction
+	BendFlag  $$ to flag whether slope has changed upon crossing a junction
+	count  $$ loop counter for timing tests
+	index  $$ generic loop counter variable
+	f: time  $$ clock time, in seconds, from zclock
+	newtime $$ current time (seconds) used to determine time to wait at end of loop; added 7/14/00
+	waittime $$ time (seconds) to wait at end of loop to ensure animation is not too fast;  added 7/14/00
+
+***** Initialize
+calc	t := 0
+	BendFlag := FALSE
+	serial := 1  $$ index of RampsUsed
+	waittime := 0.02 $$ wait this many seconds at end of loop
+zero	sJcn
+zero	RampsUsed  $$ initialize to all zero
+*do	Trace2(whichdata, "serial", serial, "RampsUsed(serial)", RampsUsed(serial))
+do	ComputeData(whichdata; Data)  $$ store locally to reduce number of tests on whichdata
+*do	ShowData(; Data)
+calc	x := xi := Data(7)
+	v := vi := Data(8)
+if	whichdata = GIVEN $$ use given data
+	calc	DoBall := FALSE
+		StuGraphVisible := FALSE
+		CorrectGraphVisible := FALSE
+	outunit	GivGraphVisible = FALSE  $$ no need to plot
+elseif	whichdata = STUDENT  $$ use student data
+	calc	DoBall := TRUE
+endif
+*  NOTE: ramp n includes left endpoint at post n, and does NOT include right endpoint at post n+1
+
+***** Find initial height of ball and initial ramp used
+calc	ramp := x$divt$LEN + 1
+if	frac(x/LEN) = 0  $$ initial position is at a post
+	if	ramp >= NPOSTS  $$ ball is at extreme righthand post
+		if	v < 0
+			calc	RampsUsed(serial) := ramp-1
+		elseif	v = 0
+			if	Data(ramp-1) < Data(ramp)  $$ sloping down toward the left
+				calc	RampsUsed(serial) := ramp-1  $$ ball will move to the left
+			endif
+		endif
+	else  $$ ball is on a post to left of extreme righthand post
+		if	(v > 0) & (ramp <= NRAMPS)  $$ ball will move to the right
+			calc	RampsUsed(serial) := ramp
+		elseif	(v < 0) & (ramp > 1)  $$ ball will move to the left
+			calc	RampsUsed(serial) := ramp-1
+		elseif	(v = 0) & 1 < ramp <= NRAMPS
+			if	Data(ramp+1) < Data(ramp)  $$ sloping down toward the right
+				calc	RampsUsed(serial) := ramp  $$ ball will move to the right
+			elseif	Data(ramp-1) < Data(ramp)  $$ sloping down toward the left
+				calc	RampsUsed(serial) := ramp-1  $$ ball will move to the left
+			endif
+		endif
+	endif
+	calc	hi := Data(ramp)  $$ initial height is post height
+else	$$  initially, ball is NOT at a post
+	calc	RampsUsed(serial) := ramp
+	calc	hi := (Data(ramp+1)+Data(ramp))$divr$2  $$ average height of adjacent posts
+endif
+*do	Trace2(whichdata, "serial", serial, "RampsUsed(serial)", RampsUsed(serial))
+
+***** Compute speeds that would satisfy energy conservation at all junctions
+do	ComputeJcnSpeeds(hi; Data, sJcn)
+
+***** Compute accelerations on all ramps, and initial acceleration
+do	ComputeAccel(; Data, Accel)
+
+***** 	NOTE: Code for initial acceleration must be identical to code inside loop
+if	ramp = NRAMPS+1  $$ ball at extreme righthand post has accel of ramp to left
+	calc	a := Accel(ramp-1)
+elseif	1 < ramp <= NRAMPS  $$ ball between ramps 2-5, inclusive
+	if	frac(x/LEN)=0  $$ ball on a junction
+		if	v > 0
+			calc	a := Accel(ramp)  $$ use acceleration of ramp to the right
+		elseif	v < 0
+			calc	a := Accel(ramp-1)  $$ use acceleration of ramp to the left
+		elseif	v = 0
+			if	Data(ramp+1) < Data(ramp)  $$ ramp slopes down toward the right
+*					$$ ramp to the left may be up, horizontal, or down
+				calc	a := Accel(ramp)
+			elseif	(Data(ramp-1) < Data(ramp))&(Data(ramp+1) > Data(ramp))
+*				$$ ramp slopes down toward the left and up toward the right
+				calc	a := Accel(ramp-1)
+			else
+				calc	a := 0
+			endif
+		endif
+	else	$$  not on a junction
+		calc	a := Accel(ramp)
+	endif
+elseif	ramp = 1
+	calc	a := Accel(ramp)
+endif
+*do	ShowJcnSpeeds(; sJcn)
+
+***** Set up graphing axes
+do	GrphPort
+case	type
+POS
+	calc	ordinate := x
+	do	xtGPsetup
+VEL
+	calc	ordinate := v
+	do	vtGPsetup
+ACC
+	calc	ordinate := a
+	do	atGPsetup
+endcase
+gat	t,ordinate
+calc	lastt := t
+	lastord := ordinate
+if	DoBall&(RollState = PAUSE)
+	calc	PauseFlag := TRUE
+else
+	calc	PauseFlag := FALSE
+endif
+clrkey	$$ prepare to look for mouse clicks that pause or terminate animation
+calc	count := 0
+	time := zclock
+
+*do	ShowRampsUsed(whichdata; RampsUsed)
+******************** Begin animation **********************
+loop
+	getkey	$$ look for mouse click
+outloop	(zkey=zk(left:down))&(whichdata = STUDENT)
+	if	(zkey = zk(right:down))&DoBall
+		calc	PauseFlag := TRUE
+	endif
+	calc	newtime:=zclock $$ added 7-14-00
+
+*	***** Determine ramp number
+	calc	ramp :=  x $divt$ LEN + 1
+		trialramp := ramp  $$ initialization only
+
+*	NOTE: The following section causes problems for v = -10 cm/s on level tracks;
+*	testing for ball on junction seems to interfere with testing on junction 
+*	crossing when ball ends up precisely at a junction when moving to the left.
+*	Consequence is that serial does not get incremented and help is not available.
+
+*	***** Compute corresponding acceleration
+	if	frac(x/LEN)=0  $$ ball on a junction
+		if	ramp = NRAMPS+1
+			calc	a := Accel(ramp-1)
+		elseif	1 < ramp <= NRAMPS  $$ ball between ramps 2-5, inclusive
+			if	v > 0
+				calc	a := Accel(ramp)  $$ use acceleration of ramp to the right
+					trialramp := ramp
+					RampsUsed(serial) :=  ramp
+			elseif	v < 0
+				calc	a := Accel(ramp-1)  $$ use acceleration of ramp to the left
+					trialramp := ramp - 1
+					RampsUsed(serial):= ramp-1
+			elseif	v = 0
+				if	Data(ramp+1) < Data(ramp)  $$ ramp slopes down toward the right
+*					$$ ramp to the left may be up, horizontal, or down
+					calc	a := Accel(ramp)
+						trialramp := ramp
+				elseif	(Data(ramp-1) < Data(ramp))&(Data(ramp+1) > Data(ramp))
+*				$$ ramp slopes down toward the left and up toward the right
+					calc	a := Accel(ramp-1)
+						trialramp := ramp - 1
+				else
+					calc	a := 0
+				endif
+			endif
+		elseif	ramp = 1
+			calc	a := Accel(ramp)
+		endif
+*		do	Trace2(whichdata,"on junction; serial", serial, "RUsed(s)", RampsUsed(serial))
+*		do	ShowValues(whichdata, "fell on junction", ramp, trialramp, x, xJcn, v, vJcn, a, t)
+*		do	ShowRampsUsed(whichdata; RampsUsed)
+		calc	x := x+v*DT+DT2*a  $$ advance by one time step
+			v := v+a*DT
+			t := t+DT
+		outloop	(x <0)|(x > XMAX)|((v=0)&(t > TMAX))
+	else	$$  not on a junction
+		calc	a := Accel(ramp)
+
+*		***** Look ahead at predicted value of position, xtrial
+		calc	xtrial  :=  x+v*DT+DT2*a
+		if	xtrial >= 0
+			calc	trialramp  :=  xtrial $divt$ LEN + 1
+		else	$$ xtrial < 0
+			calc	trialramp  :=  0
+		endif
+		outloop	(trialramp < 1)|(trialramp > NRAMPS)|(t > TMAX)
+*		do	ShowValues(whichdata, "computed trialramp", ramp, trialramp, x, xJcn, v, vJcn, a, t)
+
+*		***** Advance the motion
+		if	trialramp!=ramp  $$ ramp crossing
+*			do	ShowValues(whichdata, "detected ramp crossing", ramp, trialramp, x, xJcn, v, vJcn, a, t)
+*			do	Trace2(whichdata,"crossing; serial", serial, "RUsed(s)", RampsUsed(serial))
+			if	v > 0
+				calc	xJcn := ramp*LEN
+					vJcn := sJcn(ramp+1)  $$ strictly positive
+				if	ramp < NRAMPS
+					calc	ramp := ramp+1
+					if	serial < NRAMPS
+						calc	serial := serial+1
+							RampsUsed(serial) := ramp
+					endif
+				endif
+			elseif	v < 0	
+				calc	xJcn := (ramp-1)*LEN
+					vJcn := -sJcn(ramp)  $$ strictly negative
+				if	ramp > 1
+					calc	ramp := ramp-1
+					if	serial < NRAMPS
+						calc	serial := serial+1
+							RampsUsed(serial):= ramp
+					endif
+				endif
+			endif
+*			do	ShowValues(whichdata, "found xJcn, vJcn, ramp", ramp, trialramp, x, xJcn, v, vJcn, a, t)
+*			do	ShowRampsUsed(whichdata; RampsUsed)
+			calc	DTjcn := 2*(xJcn-x) $divr$ (vJcn+v)
+			calc	x := xJcn  $$ advance to junction
+				v := vJcn
+				t := t+DTjcn
+				aold := a
+			calc	a := A*((Data(trialramp) - Data(trialramp+1)) $divr$ CM)
+			if	a != aold
+				calc	BendFlag := TRUE
+			else
+				calc	BendFlag := FALSE
+			endif
+*			do	ShowValues(whichdata, "advanced to junction", ramp, trialramp, x, xJcn, v, vJcn, a, t)
+			calc	x := x+v*(DT-DTjcn)+DT2*a
+*					$$ advance beyond junction to next time step
+				v := v+a*(DT-DTjcn)
+				t := t+(DT-DTjcn)
+		else	$$ no ramp crossing
+			calc	x := x+v*DT+DT2*a  $$ advance by one time step
+				v := v+a*DT
+				t := t+DT
+		endif
+	endif
+
+*	***** Determine ordinate values
+	calc	\type-POS\\ordinate := x\ordinate := v\ordinate := a
+
+*	***** Remove piece of existing curve (if any) to make plotting visible along existing curve
+	if	whichdata = STUDENT
+		mode	erase
+		clip	LGrph, TGrph; RGrph, BGrph
+		gdraw	lastt, lastord; t, ordinate
+		clip
+		mode	xor
+	endif
+
+	if	PauseFlag & BendFlag
+		calc	BendFlag := FALSE
+		do	UpdateRollButton(toROLL)
+		pause	keys = touch(left:down; right:down)
+		if	zkey = zk(right:down)
+			calc	PauseFlag := TRUE
+		else
+			calc	PauseFlag := FALSE
+		endif
+		do	UpdateRollButton(toSTOP)
+	endif
+
+*	***** Move the ball
+*	do	ShowValues(whichdata, "ready to move ball", ramp, trialramp, x, xJcn, v, vJcn, a, t)
+	if	DoBall  $$ display the rolling ball
+		if	ramp > NRAMPS
+			calc	y := Data(ramp)
+		else
+			calc	rise := Data(ramp+1) - Data(ramp)
+				y := Data(ramp) + (rise$divr$rLEN)*((x$divr$CM)-(ramp-1)*rLEN)
+		endif
+		calc	X := TrckOX + ((x$divr$CM)*WdTrck)$divr$rXMAX
+			Y := TrckOY - (y*HtTrck)$divr$YMAX
+		move	icons: Xold, Yold-WksFudge; X, Y-WksFudge; zk(o)
+		calc	yold := y
+			Yold := Y
+			Xold := X
+	endif
+
+*	***** Determine color
+	color	\type-POS\\zblue\zmagenta\zred
+
+*	***** Plot on the graph
+	if	whichdata = GIVEN
+*		if	Screen = WRKSTN  $$ @@@*			gat	t, ordinate
+*			plot	zk(d)
+*		else
+*			gdot	t, ordinate
+*		endif
+		color	zdefaultf
+*		gat	t, ordinate  $$ for EGA, VGA and WRKSTN  $$ IBM $$ WS
+		plot	zk(d)
+		gdot	t, ordinate  $$ for MacSE and MacII  $$ MAC
+	else  $$ whichdata = STUDENT, concurrent animation
+		if	Dashed
+			if	mod(count, 4) = 0  
+				mode	write
+				clip	LGrph, TGrph; RGrph, BGrph
+				gdraw	lastt, lastord; t, ordinate
+				clip  $$ turn off clipping
+				mode	xor
+			endif
+		else  $$ continuous curve
+			mode	write
+			clip	LGrph, TGrph; RGrph, BGrph
+			gdraw	lastt, lastord; t, ordinate
+			clip  $$ turn off clipping
+			mode	xor
+		endif
+	endif
+	color	zdefaultf
+	calc	lastt := t
+		lastord := ordinate
+	calc	count := count + 1
+*	pause	0.045  $$ to overcome lack of sync on sun3_35 version of -move- command
+*	allow	update
+*	inhibit	update
+	loop	zclock < newtime + waittime $$ wait here until waittime has elasped since beginning of loop;  added 7/14/00
+	endloop
+endloop
+
+******************** End animation **********************
+color	zdefaultf
+clip  $$ turn off clipping
+*allow	update
+mode	xor
+calc	time := zclock - time
+if	whichdata = STUDENT
+	calc	StuGraphVisible := TRUE
+		NcurvesVisible := NcurvesVisible + 1
+		Ntries := Ntries + 1
+	if	(type = VEL)|(type = ACC)
+		calc	NtriesSincevtat := 0
+	else
+		calc	NtriesSincevtat := NtriesSincevtat + 1
+	endif
+	do	FindErrors
+	if	ErrorNum = 0
+		calc	CorrectGraphVisible := TRUE
+	else
+		calc	CorrectGraphVisible := FALSE
+	endif
+else	$$ whichdata = GIVEN
+	calc	NcurvesVisible := 0
+endif
+do	ComputeRampsUsed(whichdata; RampsUsed)
+*do	TellTime(DoBall, count, time)
+*do	ShowRampsUsed(whichdata; RampsUsed)
+if	DoBall
+	if	(1 <= trialramp <= NRAMPS)&(0 <= x <= XMAX)
+		pause	0.2
+		do	PlaceBall(x)  $$ remove ball from final position
+		pause	1
+		do	PlaceBall(xi)  $$ reposition ball at original position
+	else	$$ (trialramp < 1) or (trialramp > NRAMPS) or (x < 0) or (x > XMAX)
+		do	PlaceBall(x)  $$ remove ball from final position
+		if	WalkThrough
+			pause	1
+		elseif	abs(v) > 0	$$ not(WalkThrough)
+			calc	x := x + v*DT
+			do	DropBall(v; x)  $$ roll ball on table off the ramp
+		endif
+		do	PlaceBall(xi)  $$ reposition ball at original position
+	endif
+endif
+do	TrckPort  $$ to ensure that zgtouchx and zgtouchy have correct values in unit HandleTk
+
+**********
+*unit	TellTime(Anim, c, t)
+*	i: c, Anim
+*	f: t
+*mode	write
+*do	HelpPort
+*do	PtErase
+*if	Anim
+*	write	With ball:
+*	
+*else
+*	write	Without ball:
+*	
+*endif
+*write	time = <|s, t|>
+*	<|s,c|> loops
+*	<|s, t/c|> sec / loop
+*mode	xor
+*pause
+
+**********
+unit	ComputeJcnSpeeds(hi; Data, sJcn)
+	merge,global:
+	i: i
+	hi  $$ initial vertical height of ball (in CM) above y  = 0
+	Data(*), sJcn(*)
+	rvi  $$ reduced initial velocity
+	rData  $$ reduced post height
+	f: rhi  $$ reduced height (floating point)
+	f: r2G  $$ reduced acceleration of gravity, times 2
+	radical  $$ quantity under the square root sign; 
+*		indicator of whether ball ever reaches given height
+calc	rhi := hi/CM  $$ floating point result
+	rvi := vi $divr$ CMperS  $$ integer result
+	r2G := 2*(G/CMperS2)  $$ floating point result
+*clip
+*mode	write
+*do	MessPort
+*do	PtErase
+loop	i := 1, NPOSTS
+*	calc	rData := Data(i) / CM
+	calc	rData := Data(i) $divr$ CM
+		radical := r2G*(rhi-rData) +  rvi*rvi
+	if	radical < 0
+		calc	sJcn(i) := 0  $$ ball would never reach this junction
+	elseif	rData = rhi
+		calc	sJcn(i) := abs(vi)
+	else  $$ radical > 0
+		calc	sJcn(i) := int(sqrt(radical)*CMperS)
+	endif
+*	at	X1, Y1+(i-1)*2Ynewline
+*	write	rData=<|s,rData|>,r2G=<|s,r2G|>,rhi=<|s,rhi|>,
+*		rvi=<|s,rvi|>,sJcn(<|s,i|>)=<|s,sJcn(i)$divr$CMperS,2,2|>
+endloop
+*mode	xor
+
+**********
+*unit	ShowJcnSpeeds(; sJcn)
+*	merge,global:
+*	i: i
+*	sJcn(*)
+*clip
+*mode	write
+*do	MessPort
+*do	PtErase
+*loop	i := 1, NPOSTS
+*	at	X1, Y1 + (i-1)*Ynewline
+*	write	speed(<|s, i|>) = <|s, sJcn(i)/CMperS,4,2|>
+*endloop
+*pause
+*mode	xor
+
+**********
+unit	ComputeAccel(; Data, Accel)
+	merge,global:
+	i: ramp
+	Data(*), Accel(*)
+loop	ramp := 1, NRAMPS
+	calc	Accel(ramp) := A*((Data(ramp) - Data(ramp+1)) $divr$ CM)
+endloop
+
+**********
+unit	ComputeData(which; Data)
+*	Fill Data array with contents of either GivData or StuData
+	merge,global:
+	i: i, which
+	Data(*)
+if	which = GIVEN
+	loop	i := 1, RECSIZE
+		calc	Data(i) := GivData(i)
+	endloop
+elseif	which = STUDENT
+	loop	i := 1, RECSIZE
+		calc	Data(i) := StuData(i)
+	endloop
+else
+	zero	Data
+endif
+
+**********
+*unit	ShowData(; Data)
+*	merge,global:
+*	i: i, Data(*)
+*mode	write
+*clip
+*do	MessPort
+*do	PtErase
+*loop	i := 1, RECSIZE
+*	at	X1+10, Y1 + (i-1)*Ynewline
+*	write	Data(<|s, i|>) = <|s, Data(i)|>
+*endloop
+*pause
+*mode	xor
+
+**********
+unit	ComputeRampsUsed(which; RampsUsed)
+	merge,global:
+	i: i, which
+	RampsUsed(*)
+if	which = GIVEN
+	zero	GivRampsUsed
+	loop	i := 1, NRAMPS
+		calc	GivRampsUsed(i) := RampsUsed(i)
+	endloop
+elseif	which = STUDENT
+	zero	StuRampsUsed
+	loop	i := 1, NRAMPS
+		calc	StuRampsUsed(i) := RampsUsed(i)
+	endloop
+endif
+
+**********
+*unit	ShowPositions(x)
+*	merge,global:
+*	i: x
+*mode	write
+*erase	466,291;608,382
+*at	466,291;608,382
+*write	x = <|s, x|>
+*	xi = <|s, xi|>
+*	xiold = <|s, xiold|>
+*mode	xor
+*pause
+
+**********
+unit	CheckFile(; NumFromFiles, NumFromUsrEdu)
+	merge, global:
+	i: NumFromFiles, NumFromUsrEdu, NumFromCurrDir
+calc	NumFromUsrEdu := 0  $$ number of examples from /afs/andrew.cmu.edu/cdec/ctapps/gt/gt.dat 
+	NumFromCurrDir := 0  $$ number of examples from .
+do	HelpPort
+do	PtErase
+*if	Screen = WRKSTN
+*	setfile	gtp; "/afs/andrew.cmu.edu/cdec/ctapps/gt/gt.dat", ro
+*	if	zreturn
+*		datain	gtp; gtdata(NGIVEN + 1, 1), RECSIZE*NREC
+*		if	zreturn
+*			calc	NumFromUsrEdu := int(zretinf/RECSIZE) $$ number of records in file
+*		endif
+*	endif
+*endif
+setfile	gtp; "./gt.dat", rw
+if	zreturn
+	datain	gtp; gtdata(NGIVEN + 1, 1), RECSIZE*NREC
+	if	zreturn
+		calc	NumFromCurrDir := int(zretinf/RECSIZE) $$ number of records in file
+	endif
+endif
+calc	NumFromFiles := NumFromCurrDir + NumFromUsrEdu
+write	Starting up
+	with <|s, NGIVEN + NumFromFiles|> examples, 
+	(<|s, NumFromFiles|> from files) ...
+pause	2
+do	PtErase
+
+**********
+unit	SaveExample
+	merge,global:
+	i: j
+setfile	gtp; "./gt.dat", rw
+mode	write
+do	HelpPort
+do	PtErase
+if	zreturn  $$ all okay
+	if	CurrStored < NREC
+		do	AppendToFile(NGIVEN + CurrStored + 1)
+		write	Added experiment
+			as example <|s, NGIVEN + CurrStored|>.
+		if	GivGraphVisible
+			write	<|cr|><|cr|>To run it, select @1ff   1Pick an example@1ff8000 and enter <|s, NGIVEN + CurrStored|>.
+		endif
+		do	ExamplesMenus
+	else
+		write	No room for more than <|s, NGIVEN + NREC|> examples.
+	endif
+elseif	zreturn = 4  $$ file not found
+	if	CurrStored < NREC
+		do	CreateFile
+		write	Experiment saved 
+			as example <|s, NGIVEN + CurrStored|>.
+		if	GivGraphVisible
+			write	<|cr|><|cr|>To run as a problem, select @1ff   1Pick an example@1ff8000 and enter <|s, NGIVEN + CurrStored|>.
+		endif
+		do	ExamplesMenus
+	else
+		write	Cannot add experiment.
+	endif
+else
+	write	zreturn = <|s, zreturn|>.
+endif
+setfile	gtp
+mode	xor
+
+**********
+unit	CreateFile
+	merge,global:
+	i: j
+loop	j := 1, RECSIZE - 1
+	calc	gtdata(NGIVEN + CurrStored + 1, j) := StuData(j)
+endloop
+calc	gtdata(NGIVEN + CurrStored + 1, RECSIZE) := NGIVEN + CurrStored + 1
+addfile	gtp; "./gt.dat"
+dataout	gtp; gtdata(NGIVEN + CurrStored + 1, 1), RECSIZE
+setfile	gtp
+calc	CurrStored := CurrStored + 1 
+
+**********
+unit	AppendToFile(i)
+	merge,global:
+	i: i, j
+loop	j := 1, RECSIZE - 1
+	calc	gtdata(NGIVEN + CurrStored + 1, j) := StuData(j)
+endloop
+calc	gtdata(NGIVEN + CurrStored + 1, RECSIZE) := NGIVEN + CurrStored + 1
+reset	gtp; end
+dataout	gtp; gtdata(NGIVEN + CurrStored + 1, 1), RECSIZE
+setfile	gtp
+calc	CurrStored := CurrStored + 1
+
+**********
+@1pl8000unit	DeleteExamples
+setfile	gtp; "./gt.dat", rw
+mode	write
+do	HelpPort
+do	PtErase
+if	not(zreturn)
+	write	\zreturn=4\File not found.
+		\File locked or in use.
+	outunit
+endif
+delfile	gtp
+if	zreturn
+@1pl4006	write	Deleted experiments.
+@1pl8000	calc	CurrStored := NumRemote
+	do	ExamplesMenus
+else
+	write	\zreturn=3\File not open.
+		\File locked or in use - cannot delete.
+endif
+mode	xor
+@1pl4006
+**********
+unit	InitData
+	merge,global:
+	i: i, j
+calc	gtdata(1, 1) := 5 CM  $$ first six values are post heights (cm)
+	gtdata(1, 2) := 4 CM
+	gtdata(1, 3) := 3 CM
+	gtdata(1, 4) := 2 CM
+	gtdata(1, 5) := 1 CM
+	gtdata(1, 6) := 0 CM
+	gtdata(1, 7) := 50 CM $$ initial position (cm)
+	gtdata(1, 8) := -30 CMperS  $$ initial velocity (cm/s)
+	gtdata(1, 9) := 1  $$ example number 1
+*
+calc	gtdata(2, 1) := 0 CM  $$ first six values are post heights (cm)
+	gtdata(2, 2) := 0 CM
+	gtdata(2, 3) := 0 CM
+	gtdata(2, 4) := 2 CM
+	gtdata(2, 5) := 4 CM
+	gtdata(2, 6) := 6 CM
+	gtdata(2, 7) := 400 CM $$ initial position (cm)
+	gtdata(2, 8) := 30 CMperS  $$ initial velocity (cm/s)
+	gtdata(2, 9) := 2  $$ example number 2
+*
+calc	gtdata(3, 1) := 4 CM  $$ first six values are post heights (cm)
+	gtdata(3, 2) := 2 CM
+	gtdata(3, 3) := 0 CM
+	gtdata(3, 4) := 0 CM
+	gtdata(3, 5) := 2 CM
+	gtdata(3, 6) := 4 CM
+	gtdata(3, 7) := 350 CM $$ initial position (cm)
+	gtdata(3, 8) := 60 CMperS  $$ initial velocity (cm/s)
+	gtdata(3, 9) := 3  $$ example number 3
+*
+calc	gtdata(4, 1) := 4 CM  $$ first six values are post heights (cm)
+	gtdata(4, 2) := 2 CM
+	gtdata(4, 3) := 1 CM
+	gtdata(4, 4) := 0 CM
+	gtdata(4, 5) := 2 CM
+	gtdata(4, 6) := 4 CM
+	gtdata(4, 7) := 50 CM $$ initial position (cm)
+	gtdata(4, 8) := -30 CMperS  $$ initial velocity (cm/s)
+	gtdata(4, 9) := 4  $$ example number 4
+*
+calc	gtdata(5, 1) := 3 CM  $$ first six values are post heights (cm)
+	gtdata(5, 2) := 0 CM
+	gtdata(5, 3) := 1 CM
+	gtdata(5, 4) := 1 CM
+	gtdata(5, 5) := 1 CM
+	gtdata(5, 6) := 1 CM
+	gtdata(5, 7) := 100 CM $$ initial position (cm)
+	gtdata(5, 8) := -50 CMperS  $$ initial velocity (cm/s)
+	gtdata(5, 9) := 5  $$ example number 5
+*
+calc	gtdata(6, 1) := 2 CM  $$ first six values are post heights (cm)
+	gtdata(6, 2) := 2 CM
+	gtdata(6, 3) := 1 CM
+	gtdata(6, 4) := 0 CM
+	gtdata(6, 5) := 2 CM
+	gtdata(6, 6) := 4 CM
+	gtdata(6, 7) := 450 CM $$ initial position (cm)
+	gtdata(6, 8) := 10 CMperS  $$ initial velocity (cm/s)
+	gtdata(6, 9) := 6  $$ example number 6
+*
+calc	gtdata(7, 1) := 5 CM  $$ first six values are post heights (cm)
+	gtdata(7, 2) := 0 CM
+	gtdata(7, 3) := 2 CM
+	gtdata(7, 4) := 2 CM
+	gtdata(7, 5) := 0 CM
+	gtdata(7, 6) := 6 CM
+	gtdata(7, 7) := 450 CM $$ initial position (cm)
+	gtdata(7, 8) := -30 CMperS  $$ initial velocity (cm/s)
+	gtdata(7, 9) := 7  $$ example number 7
+*
+calc	gtdata(8, 1) := 1 CM  $$ first six values are post heights (cm)
+	gtdata(8, 2) := 2 CM
+	gtdata(8, 3) := 0 CM
+	gtdata(8, 4) := 3 CM
+	gtdata(8, 5) := 0 CM
+	gtdata(8, 6) := 9 CM
+	gtdata(8, 7) := 50 CM $$ initial position (cm)
+	gtdata(8, 8) := 60 CMperS  $$ initial velocity (cm/s)
+	gtdata(8, 9) := 8  $$ example number 8
+*
+loop	i := NGIVEN + 1, NGIVEN + NREC
+	loop	j := 1, RECSIZE
+		calc	gtdata(i,j) := 0
+	endloop
+endloop
+loop	j := 1, RECSIZE
+	calc	GivData(j) := gtdata(1, j)
+endloop
+
+**********
+*unit	ShowGivData
+*	merge,global:
+*	i: i, j
+*erase
+*loop	i := 1, 4
+*	loop	j := 1, RECSIZE
+*		at	10+70j, 20i
+*		showt	gtdata(i, j),9,0
+*	endloop
+*endloop
+*at	50, 200; 900, 250
+*loop	j := 1, RECSIZE
+*	at	10+70j, 200
+*	showt	GivData(j),9,0
+*endloop
+*pause
+*erase
+*
+
+**********
+unit	TypePort
+calc	X1 := LType
+	Y1 := TType
+	X2 := RType
+	Y2 := BType
+
+**********
+unit	MessPort
+calc	X1 := Lmar
+	X2 := LGrph - 5
+	Y2 := TTrck - 10
+if	(Screen = MacSE)|(Screen = EGA)
+	calc	Y1 := Tmar
+else
+	calc	Y1 := Tmar + 3.6Ynewline
+endif
+at	X1, Y1; X2, Y2
+
+**********
+unit	TallMessPort
+calc	X1 := Lmar
+	Y1 := Tmar
+	X2 := LGrph - 5
+	Y2 := TTrck - 2
+at	X1, Y1; X2, Y2
+
+**********
+unit	HeadPort
+calc	X1 := Lmar
+	Y1 := Tmar
+	X2 := LGrph - 5
+	Y2 := Tmar + 3.5Ynewline
+at	X1, Y1; X2, Y2
+
+**********
+unit	GrphPort
+calc	X1 := LGrph
+	Y1 := TGrph
+	X2 := RGrph
+	Y2 := BGrph
+at	X1, Y1; X2, Y2
+
+**********
+unit	TrckPort
+calc	X1 := LTrck
+	Y1 := TTrck
+	X2 := RTrck
+	Y2 := BTrck
+gorigin	TrckOX, TrckOY
+bounds	0,0; WdTrck, HtTrck
+*axes	0,0; WdTrck, HtTrck
+scalex	XMAX
+scaley	YMAX
+*markx	100 CM, 50 CM
+*marky	10 CM, 1 CM
+*labelx	100 CM, 50 CM
+*labely	10 CM, 1 CM
+*
+
+**********
+unit	IPosPort
+calc	X1 := Lmar
+	Y1 := TIP
+	X2 := RTrck
+	Y2 := BIP
+*gorigin	TrckOX, Y1+(Y2-Y1)/2
+gorigin	TrckOX, Y1+0.4(Y2-Y1)
+*bounds	0, -(Y2-Y1)/2; ScaleFrac*(X2-X1-TrckOX), (Y2-Y1)/2
+bounds	0, -(Y2-Y1)/2; WdTrck, (Y2-Y1)/2
+scalex	rXMAX
+scaley	1
+
+**********
+unit	IVelPort
+calc	X1 := Lmar
+	Y1 := TIV
+	X2 := RTrck
+	Y2 := BIV
+*gorigin	TrckOX+WdTrck/2, Y1+(Y2-Y1)/2
+gorigin	TrckOX+WdTrck/2, Y1+0.4(Y2-Y1)
+bounds	-WdTrck/2-1, -(Y2-Y1)/2; WdTrck/2, (Y2-Y1)/2  $$ -1 on neg. x bound ensures labelx will work
+scalex	rVIMAX
+scaley	1
+
+**********
+unit	HelpPort
+calc	X1 := RTrck + 10
+	Y1 := BPick + 5 
+	X2 := Rmar
+	Y2 := Bmar
+at	X1, Y1; X2, Y2
+
+**********
+unit	ExamPort
+calc	X1 := RTrck + 10
+	Y1 := TExam
+	X2 := RExam
+	Y2 := BExam
+at	X1, Y1; X2, Y2
+
+**********
+unit	PickPort
+calc	X1 := RTrck + 10
+	Y1 := TPick
+	X2 := Rmar
+	Y2 :=  BPick
+at	X1, Y1; X2, Y2
+
+**********
+unit	ShowPorts
+do	TypePort
+do	PtFrame
+do	GrphPort
+do	PtFrame
+do	TrckPort
+do	PtFrame
+do	IPosPort
+do	PtFrame
+do	IVelPort
+do	PtFrame
+do	HeadPort
+do	PtFrame
+do	MessPort
+do	PtFrame
+do	HelpPort
+do	PtFrame
+do	ExamPort
+do	PtFrame
+do	PickPort
+do	PtFrame
+pause
+
+**********
+unit	PtFrame
+*box	X1,Y1; X2,Y2  
+box	X1,Y1; X2,Y2; -1 
+*
+
+**********
+unit	PtErase
+*erase	X1,Y1; X2+3,Y2  $$ cures problem of residual text on PC
+erase	X1,Y1; X2,Y2
+*do	PtFrame
+*
+
+**********
+unit	Setup
+do	InitData
+*do	ShowGivData
+do	SetFont
+fine	Xfine, Yfine
+rescale	TRUE,TRUE,FALSE,FALSE
+
+**********
+unit	InitProgram
+calc	DT :=  int(0.2 S)  $$ time increment (seconds)  DO NOT INCREASE THIS !!
+*	$$  e.g., DT := 0.25 S will cause execution errors for certain arrangements
+calc	DT2 :=  DT*DT $divr$ 2  $$ one-half (DT squared)
+calc	TimeSet := FALSE  $$ machine has not yet been calibrated; 
+*	need to call SetTimeIncrement from DisplayGraph
+calc	Dashed := FALSE
+calc	Help := FALSE
+	ContHelp := FALSE
+calc	GivGraphVisible := TRUE
+calc	IPshaded := IVshaded := FALSE  $$ initially no shading of IP and IV labels
+do	InitStuData
+
+**********
+unit	LoadGivData(num)
+	merge,global:
+	i: num, j
+loop	j := 1, RECSIZE  $$ load example data from gtdata into GivData array
+	calc	GivData(j) := gtdata(num, j)
+endloop
+
+**********
+unit	ZeroRampsUsed
+zero	GivRampsUsed
+zero	StuRampsUsed
+
+**********
+unit	InitStuData
+*if	current = 1  $$ LOG $$ RESEARCH APPLICATION ONLY
+*	calc	StuData(1) := 1 CM
+*		StuData(2) := 1 CM
+*		StuData(3) := 1 CM
+*		StuData(4) := 1 CM
+*		StuData(5) := 3 CM
+*		StuData(6) := 5 CM
+*		StuData(7) := 450 CM
+*		StuData(8) := -20 CMperS
+*		StuData(9) := 0  $$ invalid example number
+*	calc	xiold := StuData(7)
+*		viold := StuData(8)	
+*else
+*	calc	StuData(1) := 5 CM
+*		StuData(2) := 3 CM
+*		StuData(3) := 1 CM
+*		StuData(4) := 1 CM
+*		StuData(5) := 1 CM
+*		StuData(6) := 1 CM
+*		StuData(7) := 50 CM
+*		StuData(8) := 20 CMperS
+*		StuData(9) := 0  $$ invalid example number
+*	calc	xiold := StuData(7)
+*		viold := StuData(8)	
+*endif
+calc	StuData(1) := 5 CM
+	StuData(2) := 3 CM
+	StuData(3) := 1 CM
+	StuData(4) := 1 CM
+	StuData(5) := 1 CM
+	StuData(6) := 1 CM
+	StuData(7) := 50 CM
+	StuData(8) := 20 CMperS
+	StuData(9) := 0  $$ invalid example number
+calc	xiold := StuData(7)
+	viold := StuData(8)	
+
+
+**********
+unit	InitScreen
+do	ClearMenus
+do	SetYnewline
+do	SetScreen
+do	SetBodyFont
+*do	RestoreIcons
+outunit	OnTitlePage
+menu	Screen
+menu	About Graphs and Tracks...
+case	Screen
+WRKSTN
+*	calc	WdButton := int(90*Xfine/zwidth)
+*		HtButton := int(25*Yfine/zheight)
+MacII
+	calc	WdButton := int(90*Xfine/zwidth)
+		HtButton := int(20*Yfine/zheight)
+VGA
+	calc	WdButton := int(90*Xfine/zwidth)
+		HtButton := int(18*Yfine/zheight)
+EGA
+	calc	WdButton := int(90*Xfine/zwidth)
+		HtButton := int(22*Yfine/zheight)
+MacSE
+	calc	WdButton := int(80*Xfine/zwidth)
+		HtButton := int(18*Yfine/zheight)
+endcase
+case	MachineType
+MACINTOSH
+	calc	Mouse := ONEbutton
+IBMPC, WORKSTATION
+	calc	Mouse := TWObutton
+endcase
+calc	Gap := WdButton/40
+*	WdLabel := int(90*Xfine/zwidth)
+	WdLabel := int(95*Xfine/zwidth)
+	HtLabel := HtButton
+	WdOrdLabel  := int(45*Xfine/zwidth)
+	BType := TType + HtButton 
+	LType := LGrph + 2WdOrdLabel
+	RType := Rmar
+	Lpos := LType
+	Rpos := Lpos + WdButton - Gap
+	Lvel := Rpos + 2Gap
+	Rvel := Lvel + WdButton - Gap
+	Lacc := Rvel + 2Gap
+	Racc := Lacc + WdButton - Gap
+case	Screen
+MacSE
+	calc	HtScale := int(30*Yfine/zheight)
+MacII, VGA
+	calc	HtScale := int(35*Yfine/zheight)
+EGA
+	calc	HtScale := int(35*Yfine/zheight)
+WRKSTN
+*	calc	HtScale := int(40*Yfine/zheight)
+endcase
+calc	TIV := BIV - HtScale
+	BIP := TIV - 2
+	TIP := BIP - HtScale
+	BTrck := TIP - HtLabel
+if	(Screen = MacSE)|(Screen = EGA)
+	calc	TTrck := BTrck - 3*HtScale  $$ fixed height for tracks arrangement
+else
+	calc	TTrck := BTrck - 3.2*HtScale  $$ fixed height for tracks arrangement
+endif
+calc	TrckOX := Lmar + WdLabel + Lmar
+	LTrck := TrckOX - 10
+	TrckOY := BTrck -  0.9HtLabel
+	WksFudge := (8*Yfine/zheight)  $$ fine coords
+if	RTrck - LTrck > 1
+	calc	WdTrck := int(ScaleFrac*(RTrck - LTrck))  $$ fine coords
+else
+	calc	WdTrck := 1  $$ to insure bounds command doesn't bomb in unit TrckPort
+endif
+if	(Screen = MacSE)|(Screen = EGA)
+	calc	TGrph := BType + 3
+else
+	calc	TGrph := BType + HtLabel
+endif
+*calc	BGrph := TTrck - 10
+calc	BGrph := TTrck - 6
+	RGrph := Rmar
+calc	LBall := Lmar
+	RBall := Lmar + 0.5*WdButton
+	BBall := BTrck - HtButton
+	TBall := BBall - HtButton
+case	Screen
+MacSE
+	calc	HtTrck := int(60*Yfine/zheight)  $$ uses zk(b) in gt10
+EGA
+	calc	HtTrck := int(65*Yfine/zheight)  $$ uses zk(b) in gt09
+else
+	calc	HtTrck := int(80*Yfine/zheight)  $$ uses zk(b) in gt12
+endcase
+calc	Thick := (4*Yfine/zheight)*(rYMAX/HtTrck) CM  $$ Thickness of track in graphing coords
+	TExam := BGrph + 5
+	BExam := TExam + HtButton
+	RExam := Rmar
+	TPick := BExam + 5
+	BPick := TPick + HtButton
+	BlockWd := (15*Xfine/zwidth) CM  $$ graphing coordinates in TrckPort
+	THilight := -2Thick
+	BHilight := -4Thick
+if	Screen = VGA
+	calc	RampLabelgy := -4.5Thick
+		PostLabelgy := -4Thick
+		Fonty := -4
+elseif	Screen = EGA
+	calc	RampLabelgy := -6Thick
+		PostLabelgy := -4.5Thick
+		Fonty := -6
+elseif	Screen = MacSE
+	calc	RampLabelgy := -5Thick
+		PostLabelgy := -4Thick
+		Fonty := 0
+else
+	calc	RampLabelgy := -5Thick
+		PostLabelgy := -5Thick
+		Fonty := 0
+endif
+if	Screen = EGA
+	calc	PostLabelgDy := 2.8CM
+else
+	calc	PostLabelgDy := 1.7CM
+endif
+if	MachineType = IBMPC
+	rgb	zred, 100,20,0, zdefaultf
+	rgb	zblue, 0,70,100, zgreen
+	rgb	zmagenta, 100,0,100, zred
+endif
+
+**********
+unit	SetYnewline
+font	$$ IMPORTANT to reset font here
+inhibit	display
+at	0, 0
+write	
+	
+calc	Ynewline := zwherey
+allow	display
+
+**********
+unit	SetScreen
+case	MachineType
+MACINTOSH
+	if	zwidth < 620  $$ MAC
+		calc	Screen := MacSE
+	else
+		calc	Screen := MacII
+	endif
+IBMPC
+*	NOTE: The following strategy seems to work for font zsans, 18 BUT NOT for zsans, 14
+	if	Ynewline > Cutpoint  $$ determined experimentally
+		calc	Screen := VGA
+	else
+		calc	Screen := EGA
+	endif
+*WORKSTATION
+*	calc	Screen := WRKSTN  $$ WS
+endcase
+*do	ShowYnewline
+
+**********
+unit	ShowYnewline
+at	100,250; 400,300
+write	Ynewline = <|s, Ynewline|>
+	Screen = 
+case	Screen
+MacSE
+	write	MacSE
+MacII
+	write	MacII
+EGA
+	write	EGA
+VGA
+	write	VGA
+WRKSTN
+	write	WRKSTN
+else
+	show	Screen
+endcase
+pause
+erase	100,250; 400,300
+
+**********
+unit	SetBodyFont
+case	Screen
+MacSE, MacII
+	font	zsans, 14
+EGA
+	font	zsans, 24
+VGA
+	font	zsans, 16
+endcase
+
+**********
+unit	SetNumbersFont
+case	Screen
+MacSE
+	font	zsans, 12
+MacII
+	font	zsans, 14
+EGA
+	font	zsans, 22
+VGA
+	font	zsans, 16
+endcase
+
+**********
+unit	RestoreIcons
+if	Screen = MacSE
+*	icons	"gt10"  $$ MAC
+	icons	"GT10.FPC" $$ IBM
+*	cursor	"gt10", zk(A)
+elseif	Screen = EGA
+	icons	"GT09.FPC" $$ IBM
+*	cursor	"gt09", zk(A)
+else
+*	icons	gt12  $$ MAC
+	icons	"GT12.FPC"  $$ IBM
+	$$ Note: in Windows cT 3.0, these file names MUST be ALL UPPERCASE (even if actual file name is lowercase, for this to work)
+*	cursor	"gt12", zk(A)
+endif
+
+**********
+unit	SetFont
+* used to set an initial font, used in routine SetYnewline ONLY; real fonts are set by SetBodyFont
+case	MachineType
+MACINTOSH
+	font	zsans, 14
+IBMPC
+	font	zsans, 18
+else
+	font	zsans, 14
+endcase
+@cT end
